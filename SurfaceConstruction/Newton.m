@@ -1,5 +1,5 @@
 function x = Newton(xIn, f, grad)
-
+error('this Newton version needs to be fixed')
 x = xIn;
 err = abs(f(x));
 while err > 1e-5

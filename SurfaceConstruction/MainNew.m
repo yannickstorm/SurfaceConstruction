@@ -16,9 +16,22 @@ A = 1/r^2 * eye(3);
 meanValue = @(x)(r/2 * (x' * A * x - 1));
 meanGrad = @(x)(r * A * x);
 
-dist = 0.3;
+dist = 0.2;
 initPoint = r * [1;0;0];
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
     meanValue, meanGrad, initPoint, dist);
+
+figure
+axis equal
+
+plot3(locations(1,:),locations(2,:),locations(3,:),'r.','markersize',30);
+quiver3(locations(1,:),locations(2,:),locations(3,:),...
+    surfNormals(1,:),surfNormals(2,:),surfNormals(3,:),'linewidth',2,'color','r');
+
+
+patch('faces',faces,'vertices',vertices,...
+    'facecolor',[0.5 0.5 0.5], ...
+    'edgecolor', 'none');
+camlight
