@@ -16,6 +16,10 @@ grad = @(x)(meanGrad(x) + gradGP(x));
 figure
 axis equal
 hold on
+plot3(locations(1,:),locations(2,:),locations(3,:),'k.','markersize',30);
+quiver3(locations(1,:),locations(2,:),locations(3,:),...
+    surfNormals(1,:),surfNormals(2,:),surfNormals(3,:),'linewidth',2);
+
 x(:,1) = initPoint;
 x(:,1) = Newton(x(:,1), f, grad);
 gradInit = grad(initPoint);
