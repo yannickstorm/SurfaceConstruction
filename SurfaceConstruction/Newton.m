@@ -1,6 +1,11 @@
-function xOut = Newton(xIn, f, grad)
+function x = Newton(xIn, f, grad)
 
-fIn = f(xIn);
-gradIn = grad(xIn);
-
-xOut = xIn - fIn/norm(gradIn) * gradIn;
+x = xIn;
+err = abs(f(x));
+while err > 1e-5
+    fOut = f(x);
+    gradIn = grad(x);
+	x = x - fOut/norm(gradIn) * gradIn;
+    err = abs(f(x));
+end
+    
