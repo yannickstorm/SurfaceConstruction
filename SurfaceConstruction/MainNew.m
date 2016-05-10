@@ -2,7 +2,7 @@ close all
 addpath('covMat')
 
 sigma =   .1;
-gamma =  0.5;
+gamma =  0.8;
 noiseVals =   0.00001;
 noiseGrad =    0.00001;
 r = 1;
@@ -16,7 +16,7 @@ A = 1/r^2 * eye(3);
 meanValue = @(x)(r/2 * (x' * A * x - 1));
 meanGrad = @(x)(r * A * x);
 
-dist = 0.2;
+dist = 0.3;
 initPoint = r * [1;0;0];
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
@@ -24,6 +24,7 @@ initPoint = r * [1;0;0];
     meanValue, meanGrad, initPoint, dist);
 
 figure
+hold on
 axis equal
 
 plot3(locations(1,:),locations(2,:),locations(3,:),'r.','markersize',30);
