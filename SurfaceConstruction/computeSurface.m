@@ -12,17 +12,23 @@ gradGP = @(x)(covMatStarGrad(sigma, gamma, x, locations) * RVector);
 
 f = @(x)(meanValue(x) + fGP(x));
 grad = @(x)(meanGrad(x) + gradGP(x));
+
 x(:,1) = initPoint;
 x(:,1) = NewtonDir(x(:,1), f, grad);
-gradInit = grad(initPoint);
+gradX(:,1) = grad(x(:,1));
+
+gradInit = gradX(:,1);
 perpVector = cross(gradInit,rand(3,1));
 normPerpVector = perpVector/norm(perpVector);
 x(:,2) = x(:,1) + dist * normPerpVector;
 x(:,2) = NewtonDir(x(:,2), f, grad);
+gradX(:,2) = grad(x(:,2));
+
 x(:,3) = thirdPoint(x(:,1), x(:,2), ...
     grad(x(:,1)), grad(x(:,1)), ...
     dist, 1);
 x(:,3) = NewtonDir(x(:,3), f, grad);
+gradX(:,3) = grad(x(:,3));
 
 frontiers{1}.inds = [1 2 3];
 frontiers{1}.numPts = 3;
@@ -39,16 +45,16 @@ while numFrontiers > 0 && j < nMax
     for k = 1:numFrontiers
         index1 = frontiers{k}.inds(end);
         index2 = frontiers{k}.inds(1);
-        
         xCand = thirdPoint(...
             x(:,index1),x(:,index2), ...
-            grad(x(:,index1)), grad(x(:,index2)), ...
+            gradX(:,index1), gradX(:,index2), ...
             dist, -1);
-        xCand = NewtonDir(xCand, f, grad);
         nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.9*dist);
         if (nearIndex == 0)
             newIndex = numPts + 1;
+            xCand = NewtonDir(xCand, f, grad);
             x(:,newIndex) = xCand;
+            gradX(:,newIndex) = grad(x(:,newIndex));
             faces = [faces; [index1, newIndex, index2]];
             
             frontiers{k}.inds = [frontiers{k}.inds newIndex];
@@ -86,7 +92,7 @@ while numFrontiers > 0 && j < nMax
     newFrontiers = {};
     numNewFrontiers = 0;
     
-    j = j + 1
+    j = j + 1;
     
     for k = 1:numFrontiers
         if frontiers{k}.numPts < 3
