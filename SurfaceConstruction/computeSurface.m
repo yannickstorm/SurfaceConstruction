@@ -1,33 +1,42 @@
 function [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
     meanValue, meanGrad, initPoint, dist, plot)
+cx = 0;
+cy = 0;
+cz = 0;
+a = 1;
+b = 2;
+c = 1.5;
+Rot = [1 0 0; 0 1 0; 0 0 1];
+Object.Loc = [cx; cy; cz];
+prior_type = 'E';
+With_normals = 1;
 
-fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad);
+fPlusData = ComputeFplus(locations,surfNormals,Object,cx,cy,cz,a,b,c,Rot,prior_type, With_normals);
 
-covMatData = ComputeFullKder(sigma,gamma,locations,noiseVals,noiseGrad);
+covMatData = ComputeFullKder(sigma,gamma,locations,noiseVals,noiseGrad,With_normals);
 RVector = covMatData\fPlusData;
 
-fGP = @(x)(covMatStarValue(sigma, gamma, x, locations) * RVector);
-gradGP = @(x)(covMatStarGrad(sigma, gamma, x, locations) * RVector);
+% f = @(x)evaluate_GP_function_only(RVector, x, locations, sigma, gamma,Object,cx,cy,cz,a,b,c,Rot,prior_type, With_normals);
+grad = @(x)evaluate_GP_gradient_only(RVector, x, locations, sigma, gamma,Object,cx,cy,cz,a,b,c,Rot,prior_type, With_normals);
+f_plus = @(x)evaluate_GP(RVector, x, locations, sigma, gamma,Object,cx,cy,cz,a,b,c,Rot,prior_type, With_normals);
 
-f = @(x)(meanValue(x) + fGP(x));
-grad = @(x)(meanGrad(x) + gradGP(x));
 
 x(:,1) = initPoint;
-x(:,1) = NewtonDir(x(:,1), f, grad);
+x(:,1) = NewtonOneStep(x(:,1), f_plus);
 gradX(:,1) = grad(x(:,1));
 
 gradInit = gradX(:,1);
 perpVector = cross(gradInit,rand(3,1));
 normPerpVector = perpVector/norm(perpVector);
 x(:,2) = x(:,1) + dist * normPerpVector;
-x(:,2) = NewtonDir(x(:,2), f, grad);
+x(:,2) = NewtonOneStep(x(:,2), f_plus);
 gradX(:,2) = grad(x(:,2));
 
 x(:,3) = thirdPoint(x(:,1), x(:,2), ...
     grad(x(:,1)), grad(x(:,1)), ...
     dist, 1);
-x(:,3) = NewtonDir(x(:,3), f, grad);
+x(:,3) = NewtonOneStep(x(:,3), f_plus);
 gradX(:,3) = grad(x(:,3));
 
 if plot
@@ -64,7 +73,7 @@ while numFrontiers > 0 && j < nMax
         nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.9*dist);
         if (nearIndex == 0)
             newIndex = numPts + 1;
-            xCand = NewtonDir(xCand, f, grad);
+            xCand = NewtonOneStep(xCand, f_plus);
             x(:,newIndex) = xCand;
             gradX(:,newIndex) = grad(x(:,newIndex));
             faces = [faces; [index1, newIndex, index2]];
