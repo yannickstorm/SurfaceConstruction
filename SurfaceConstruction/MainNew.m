@@ -7,8 +7,8 @@ noiseVals =   0.00001;
 noiseGrad =    0.00001;
 r = 1;
 
-load '/Users/Yannick/Coding/PDM_acfr/OptHyperparam/bmw_total'
-% load  '/Users/Yannick/Coding/PDM_acfr/OptHyperparam/simulated_data/Simple side high resolution/bmw_11'
+% load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
+load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
 
  
 % locations = r * [[1;0;0] [0;1;0] [0;0;1]];
