@@ -7,21 +7,27 @@ noiseVals =   0.00001;
 noiseGrad =    0.00001;
 r = 1;
 
-locations = r * [[1;0;0] [0;1;0] [0;0;1] [0.7;0.7;0]];
-surfNormals = [[0.7;0.7;0] [0;1;0] [0;-1;0] [1;0;0]];
+load '/Users/Yannick/Coding/PDM_acfr/OptHyperparam/bmw_total'
+% load  '/Users/Yannick/Coding/PDM_acfr/OptHyperparam/simulated_data/Simple side high resolution/bmw_11'
 
+ 
+% locations = r * [[1;0;0] [0;1;0] [0;0;1]];
+% surfNormals = [[0.7;0.7;0] [0;1;0] [0;1;0]];
+
+locations = PartMeans;
+surfNormals = SurfNormals;
 
 A = 1/r^2 * eye(3);
+loc = [0 0 0.1]';
+meanValue = @(x)(r/2 * ((x-loc)' * A * (x-loc) - 1));
+meanGrad = @(x)(r * A * (x-loc));
 
-meanValue = @(x)(r/2 * (x' * A * x - 1));
-meanGrad = @(x)(r * A * x);
-
-dist = 0.25;
-initPoint = r * [1;0;0];
+dist = 0.5;
+initPoint = locations(:,1);%r * [1;0;0];
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoint, dist, false);
+    meanValue, meanGrad, initPoint, dist, true);
 
 figure
 hold on
