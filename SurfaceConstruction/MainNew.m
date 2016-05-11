@@ -21,7 +21,7 @@ initPoint = r * [1;0;0];
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoint, dist);
+    meanValue, meanGrad, initPoint, dist, false);
 
 figure
 hold on

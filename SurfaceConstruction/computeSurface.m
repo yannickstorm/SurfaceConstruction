@@ -1,6 +1,6 @@
 function [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoint, dist)
+    meanValue, meanGrad, initPoint, dist, plot)
 
 fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad);
 
@@ -30,11 +30,13 @@ x(:,3) = thirdPoint(x(:,1), x(:,2), ...
 x(:,3) = NewtonOneStep(x(:,3), f, grad);
 gradX(:,3) = grad(x(:,3));
 
-figure
-axis equal
-hold on
-plot3(x(1,[1:3 1]) , x(2,[1:3 1]), x(3,[1:3 1]), 'bo-')
-plot3(0,0,0,'go')
+if plot
+    figure
+    axis equal
+    hold on
+    plot3(x(1,[1:3 1]) , x(2,[1:3 1]), x(3,[1:3 1]), 'bo-')
+    plot3(0,0,0,'go')
+end
 
 frontiers{1}.inds = [1 2 3];
 frontiers{1}.numPts = 3;
@@ -55,11 +57,10 @@ while numFrontiers > 0 && j < nMax
             x(:,index1),x(:,index2), ...
             gradX(:,index1), gradX(:,index2), ...
             dist, -1);
-        pCand1 = plot3(xCand(1) , xCand(2), xCand(3), 'go');
-        gradQ = grad(xCand);
-        pCand2 = quiver3(xCand(1) , xCand(2), xCand(3), ...
-            gradQ(1), gradQ(2), gradQ(3));
-        pCand = plot3(xCand(1) , xCand(2), xCand(3), 'ro');
+        if plot
+            pCand1 = plot3(xCand(1) , xCand(2), xCand(3), 'go');
+            pCand = plot3(xCand(1) , xCand(2), xCand(3), 'ro');
+        end
         nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.9*dist);
         if (nearIndex == 0)
             newIndex = numPts + 1;
@@ -69,9 +70,11 @@ while numFrontiers > 0 && j < nMax
             faces = [faces; [index1, newIndex, index2]];
             
             frontiers{k}.inds = [frontiers{k}.inds newIndex];
-            plot3(x(1,[index1 newIndex index2]), ...
-                x(2,[index1 newIndex index2]), ...
-                x(3,[index1 newIndex index2]), 'bo-');
+            if plot
+                plot3(x(1,[index1 newIndex index2]), ...
+                    x(2,[index1 newIndex index2]), ...
+                    x(3,[index1 newIndex index2]), 'bo-');
+            end
             numPts = newIndex;
             frontiers{k}.numPts = frontiers{k}.numPts + 1;
         elseif nearIndex == 1 || nearIndex == frontiers{k}.numPts
@@ -79,28 +82,32 @@ while numFrontiers > 0 && j < nMax
             
         elseif nearIndex == 2
             faces = [faces; [index1, frontiers{k}.inds(2), index2]];
-            plot3(x(1,[index1 frontiers{k}.inds(2)]), ...
-                x(2,[index1 frontiers{k}.inds(2)]), ...
-                x(3,[index1 frontiers{k}.inds(2)]), 'bo-');
+            if plot
+                plot3(x(1,[index1 frontiers{k}.inds(2)]), ...
+                    x(2,[index1 frontiers{k}.inds(2)]), ...
+                    x(3,[index1 frontiers{k}.inds(2)]), 'bo-');
+            end
             frontiers{k}.inds(1) = [];
             frontiers{k}.numPts = length(frontiers{k}.inds);
             
         elseif nearIndex == frontiers{k}.numPts - 1
             faces = [faces; [index1, frontiers{k}.inds(end - 1), index2]];
-            plot3(x(1,[index1 frontiers{k}.inds(end - 1)]), ...
-                x(2,[index1 frontiers{k}.inds(end - 1)]), ...
-                x(3,[index1 frontiers{k}.inds(end - 1)]), 'bo-');
-            
+            if plot
+                plot3(x(1,[index1 frontiers{k}.inds(end - 1)]), ...
+                    x(2,[index1 frontiers{k}.inds(end - 1)]), ...
+                    x(3,[index1 frontiers{k}.inds(end - 1)]), 'bo-');
+            end
             frontiers{k}.inds(end) = [];
             frontiers{k}.numPts = length(frontiers{k}.inds);
             
         else
             numNewFrontiers = numNewFrontiers + 1;
             faces = [faces; [index1, frontiers{k}.inds(nearIndex), index2]];
-            plot3(x(1,[index1 frontiers{k}.inds(nearIndex) index2]), ...
-                x(2,[index1 frontiers{k}.inds(nearIndex) index2]), ...
-                x(3,[index1 frontiers{k}.inds(nearIndex) index2]), 'bo-');
-            
+            if plot
+                plot3(x(1,[index1 frontiers{k}.inds(nearIndex) index2]), ...
+                    x(2,[index1 frontiers{k}.inds(nearIndex) index2]), ...
+                    x(3,[index1 frontiers{k}.inds(nearIndex) index2]), 'bo-');
+            end
             newFrontiers{numNewFrontiers}.inds = frontiers{k}.inds(nearIndex:end);
             newFrontiers{numNewFrontiers}.numPts = length(newFrontiers{numNewFrontiers}.inds);
             
@@ -108,24 +115,25 @@ while numFrontiers > 0 && j < nMax
             frontiers{k}.numPts = length(frontiers{k}.inds);
             
         end
-        delete(pCand1);
-        delete(pCand2);
-        delete(pCand);
+        if plot
+            delete(pCand1);
+            delete(pCand);
+        end
     end
     frontiers = [frontiers newFrontiers];
     numFrontiers = numFrontiers + numNewFrontiers;
     newFrontiers = {};
     numNewFrontiers = 0;
     
-    %%%
-    for k = 1:numFrontiers
-        frontiers{k}.plot = plotFrontier(gca, frontiers{k}, x);
+    if plot
+        for k = 1:numFrontiers
+            frontiers{k}.plot = plotFrontier(gca, frontiers{k}, x);
+        end
+        drawnow
+        for k = 1:numFrontiers
+            delete(frontiers{k}.plot);
+        end
     end
-    drawnow
-    for k = 1:numFrontiers
-        delete(frontiers{k}.plot);
-    end
-    %%%
     
     j = j + 1;
     
