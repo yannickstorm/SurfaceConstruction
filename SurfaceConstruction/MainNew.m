@@ -7,8 +7,10 @@ noiseVals =   0.00001;
 noiseGrad =    0.00001;
 r = 1;
 
-% load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
-load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
+% % load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
+% load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
+% load 'bmw_total'
+load  'bmw_11'
 
  
 % locations = r * [[1;0;0] [0;1;0] [0;0;1]];
@@ -22,12 +24,12 @@ loc = [0 0 0.1]';
 meanValue = @(x)(r/2 * ((x-loc)' * A * (x-loc) - 1));
 meanGrad = @(x)(r * A * (x-loc));
 
-dist = 0.5;
+dist = 0.1;
 initPoint = locations(:,1);%r * [1;0;0];
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoint, dist, false);
+    meanValue, meanGrad, initPoint, dist, true);
 
 figure
 hold on

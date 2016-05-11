@@ -34,8 +34,13 @@ if plot
     figure
     axis equal
     hold on
+    set(gca,'view',[-116.0000   -2.8000]);
+    gradients = true;
     plot3(x(1,[1:3 1]) , x(2,[1:3 1]), x(3,[1:3 1]), 'bo-')
-    plot3(0,0,0,'go')
+    if gradients
+        quiver3(x(1,[1:3]) , x(2,[1:3]), x(3,[1:3]),...
+            gradX(1,[1:3]) , gradX(2,[1:3]), gradX(3,[1:3]),0);
+    end
 end
 
 frontiers{1}.inds = [1 2 3];
@@ -53,18 +58,28 @@ while numFrontiers > 0 && j < nMax
     for k = 1:numFrontiers
         index1 = frontiers{k}.inds(end);
         index2 = frontiers{k}.inds(1);
+        
+        if plot
+            activeEdge = plot3(x(1,[index1 index2]), ...
+                x(2,[index1 index2]), ...
+                x(3,[index1 index2]), 'm-','linewidth',4);
+        end
+        
         xCand = thirdPoint(...
             x(:,index1),x(:,index2), ...
             gradX(:,index1), gradX(:,index2), ...
             dist, -1);
         if plot
-            pCand1 = plot3(xCand(1) , xCand(2), xCand(3), 'go');
-            pCand = plot3(xCand(1) , xCand(2), xCand(3), 'ro');
+            candidatePoint = plot3(xCand(1) , xCand(2), xCand(3), 'go');
         end
         nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.9*dist);
         if (nearIndex == 0)
             newIndex = numPts + 1;
             xCand = NewtonOneStep(xCand, f, grad);
+            if plot
+                candidatePoint2 = plot3(xCand(1) , xCand(2), xCand(3), 'ro');
+            end
+        
             x(:,newIndex) = xCand;
             gradX(:,newIndex) = grad(x(:,newIndex));
             faces = [faces; [index1, newIndex, index2]];
@@ -74,6 +89,10 @@ while numFrontiers > 0 && j < nMax
                 plot3(x(1,[index1 newIndex index2]), ...
                     x(2,[index1 newIndex index2]), ...
                     x(3,[index1 newIndex index2]), 'bo-');
+                if gradients
+                    quiver3(x(1,newIndex) , x(2,newIndex), x(3,newIndex),...
+                        gradX(1,newIndex) , gradX(2,newIndex), gradX(3,newIndex),0);
+                end
             end
             numPts = newIndex;
             frontiers{k}.numPts = frontiers{k}.numPts + 1;
@@ -115,10 +134,13 @@ while numFrontiers > 0 && j < nMax
             frontiers{k}.numPts = length(frontiers{k}.inds);
             
         end
+        
         if plot
-            delete(pCand1);
-            delete(pCand);
+            delete(candidatePoint);
+            delete(candidatePoint2);
+            delete(activeEdge);
         end
+        
     end
     frontiers = [frontiers newFrontiers];
     numFrontiers = numFrontiers + numNewFrontiers;
