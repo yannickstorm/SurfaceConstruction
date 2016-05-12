@@ -11,26 +11,9 @@ fPlusGP = @(x)(CovMatStar(sigma, gamma, x, locations) * RVector);
 
 fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 
-[xNew,fGrad] = NewtonOneStepFPlus(initPoint, fPlus);
-x(:,1) = xNew;
-gradX(:,1) = fGrad(2:end);
-
-randVec = [0.8181;
-    0.8175;
-    0.7224]; % random vector for consistency in results
-perpVector = cross(gradX(:,1),randVec);
-normPerpVector = perpVector/norm(perpVector);
-xCand = x(:,1) + dist * normPerpVector;
-[xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
-x(:,2) = xNew;
-gradX(:,2) = fGrad(2:end);
-
-xCand = thirdPoint(x(:,1), x(:,2), ...
-    gradX(:,1), gradX(:,2), ...
-    dist, 1);
-[xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
-x(:,3) = xNew;
-gradX(:,3) = fGrad(2:end);
+[x, gradX, frontier] = initialiseFrontier(initPoint, fPlus, dist);
+frontiers{1} = frontier;
+faces = [1 2 3];
 
 if plot
     %     figure
@@ -45,21 +28,22 @@ if plot
     end
 end
 
-frontiers{1}.inds = [1 2 3];
-frontiers{1}.numPts = 3;
-frontiers{1}.edgeAngles = 3;
 
-numFrontiers = 1;
-nMax = 10000;
-faces = [1 2 3];
-j = 1;
-numPts = 3;
+numFrontiers = length(frontiers);
+
+numXPts = 3;
 removeFrontiers = [];
 newFrontiers = {};
 numNewFrontiers = 0;
-while numFrontiers > 0 && j < nMax
+
+jMax = 10000;
+j = 1;
+while numFrontiers > 0 && j < jMax
     
     for k = 1:numFrontiers
+        if frontiers{k}.numPts == 0
+            continue
+        end
         index1 = frontiers{k}.inds(end);
         index2 = frontiers{k}.inds(1);
         
@@ -79,11 +63,8 @@ while numFrontiers > 0 && j < nMax
             frontiers{k}.inds(end) = [];
             frontiers{k}.numPts = length(frontiers{k}.inds);
             frontiers{k}.edgeAngles(end) = [];
-            frontiers{k}.edgeAngles(end) = edgeAngle(...
-                x(:,frontiers{k}.inds(end)),...
-                x(:,frontiers{k}.inds(end - 1)),...
-                x(:,frontiers{k}.inds(1)),...
-                gradX(:,frontiers{k}.inds(end)));
+            frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
+                frontiers{k}.numPts);
         elseif frontiers{k}.edgeAngles(1) < pi/2
             faces = [faces; [index1, frontiers{k}.inds(2), index2]];
             if plot
@@ -94,11 +75,7 @@ while numFrontiers > 0 && j < nMax
             frontiers{k}.inds(1) = [];
             frontiers{k}.numPts = length(frontiers{k}.inds);
             frontiers{k}.edgeAngles(1) = [];
-            frontiers{k}.edgeAngles(1) = edgeAngle(...
-                x(:,frontiers{k}.inds(1)),...
-                x(:,frontiers{k}.inds(end)),...
-                x(:,frontiers{k}.inds(2)),...
-                gradX(:,frontiers{k}.inds(1)));
+            frontiers{k}.edgeAngles(1) = updateEdgeAngles(frontiers{k}, x, gradX, 1);
         else
             
             xCand = thirdPoint(...
@@ -119,11 +96,8 @@ while numFrontiers > 0 && j < nMax
                 frontiers{k}.inds(end) = [];
                 frontiers{k}.numPts = length(frontiers{k}.inds);
                 frontiers{k}.edgeAngles(end) = [];
-                frontiers{k}.edgeAngles(end) = edgeAngle(...
-                    x(:,frontiers{k}.inds(end)),...
-                    x(:,frontiers{k}.inds(end - 1)),...
-                    x(:,frontiers{k}.inds(1)),...
-                    gradX(:,frontiers{k}.inds(end)));
+                frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
+                    frontiers{k}.numPts);
             elseif (nearIndex == 2)
                 faces = [faces; [index1, frontiers{k}.inds(2), index2]];
                 if plot
@@ -134,11 +108,7 @@ while numFrontiers > 0 && j < nMax
                 frontiers{k}.inds(1) = [];
                 frontiers{k}.numPts = length(frontiers{k}.inds);
                 frontiers{k}.edgeAngles(1) = [];
-                frontiers{k}.edgeAngles(1) = edgeAngle(...
-                    x(:,frontiers{k}.inds(1)),...
-                    x(:,frontiers{k}.inds(end)),...
-                    x(:,frontiers{k}.inds(2)),...
-                    gradX(:,frontiers{k}.inds(1)));
+                frontiers{k}.edgeAngles(1) = updateEdgeAngles(frontiers{k}, x, gradX, 1);
             elseif (nearIndex ~= 0)
                 numNewFrontiers = numNewFrontiers + 1;
                 faces = [faces; [index1, frontiers{k}.inds(nearIndex), index2]];
@@ -150,29 +120,19 @@ while numFrontiers > 0 && j < nMax
                 newFrontiers{numNewFrontiers}.inds = frontiers{k}.inds(nearIndex:end);
                 newFrontiers{numNewFrontiers}.numPts = length(newFrontiers{numNewFrontiers}.inds);
                 newFrontiers{numNewFrontiers}.edgeAngles = frontiers{k}.edgeAngles(nearIndex:end);
-                newFrontiers{numNewFrontiers}.edgeAngles(1) = edgeAngle(...
-                    x(:,frontiers{numNewFrontiers}.inds(1)),...
-                    x(:,frontiers{numNewFrontiers}.inds(end)),...
-                    x(:,frontiers{numNewFrontiers}.inds(2)),...
-                    gradX(:,frontiers{numNewFrontiers}.inds(1)));
-                newFrontiers{numNewFrontiers}.edgeAngles(end) = edgeAngle(...
-                    x(:,frontiers{numNewFrontiers}.inds(end)),...
-                    x(:,frontiers{numNewFrontiers}.inds(end - 1)),...
-                    x(:,frontiers{numNewFrontiers}.inds(1)),...
-                    gradX(:,frontiers{numNewFrontiers}.inds(end)));
+                updateInds = [1, newFrontiers{numNewFrontiers}.numPts];
+                newFrontiers{numNewFrontiers}.edgeAngles(updateInds) = ...
+                    updateEdgeAngles(newFrontiers{numNewFrontiers}, ...
+                    x, gradX, updateInds);
+                
                 frontiers{k}.inds = frontiers{k}.inds(1:nearIndex);
                 frontiers{k}.numPts = length(frontiers{k}.inds);
                 frontiers{k}.edgeAngles = frontiers{k}.edgeAngles(1:nearIndex);
-                frontiers{k}.edgeAngles(1) = edgeAngle(...
-                    x(:,frontiers{k}.inds(1)),...
-                    x(:,frontiers{k}.inds(end)),...
-                    x(:,frontiers{k}.inds(2)),...
-                    gradX(:,frontiers{k}.inds(1)));
-                frontiers{k}.edgeAngles(end) = edgeAngle(...
-                    x(:,frontiers{k}.inds(end)),...
-                    x(:,frontiers{k}.inds(end - 1)),...
-                    x(:,frontiers{k}.inds(1)),...
-                    gradX(:,frontiers{k}.inds(end)));
+                updateInds = [1, frontiers{k}.numPts];
+                frontiers{k}.edgeAngles(updateInds) = ...
+                    updateEdgeAngles(frontiers{k}, ...
+                    x, gradX, updateInds);
+                
             elseif (nearIndex == 0)
                 %%%%%%%%%%%%%%%
                 % Check for intersection with other frontiers
@@ -182,12 +142,12 @@ while numFrontiers > 0 && j < nMax
                         nearIndex = check(xCand, x(:,frontiers{kOther}.inds), 0.9*dist);
                         if (nearIndex ~= 0)
                             intersectWithOther = true;
-                            
+                            break
                         end
                     end
                 end
                 if intersectWithOther == false
-                    newIndex = numPts + 1;
+                    newIndex = numXPts + 1;
                     [xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
                     x(:,newIndex) = xNew;
                     gradX(:,newIndex) = fGrad(2:end);
@@ -199,17 +159,12 @@ while numFrontiers > 0 && j < nMax
                     faces = [faces; [index1, newIndex, index2]];
                     
                     frontiers{k}.inds = [frontiers{k}.inds newIndex];
+                    frontiers{k}.numPts = frontiers{k}.numPts + 1;
                     frontiers{k}.edgeAngles = [frontiers{k}.edgeAngles pi];
-                    frontiers{k}.edgeAngles(1) = edgeAngle(...
-                        x(:,frontiers{k}.inds(1)),...
-                        x(:,frontiers{k}.inds(end)),...
-                        x(:,frontiers{k}.inds(2)),...
-                        gradX(:,frontiers{k}.inds(1)));
-                    frontiers{k}.edgeAngles(end - 1) = edgeAngle(...
-                        x(:,frontiers{k}.inds(end - 1)),...
-                        x(:,frontiers{k}.inds(end - 2)),...
-                        x(:,frontiers{k}.inds(end)),...
-                        gradX(:,frontiers{k}.inds(end - 1)));
+                    updateInds = [1, frontiers{k}.numPts - 1];
+                    frontiers{k}.edgeAngles(updateInds) = ...
+                        updateEdgeAngles(frontiers{k}, ...
+                        x, gradX, updateInds);
                     if plot
                         plot3(x(1,[index1 newIndex index2]), ...
                             x(2,[index1 newIndex index2]), ...
@@ -219,8 +174,17 @@ while numFrontiers > 0 && j < nMax
                                 gradX(1,newIndex) , gradX(2,newIndex), gradX(3,newIndex),0);
                         end
                     end
-                    numPts = newIndex;
-                    frontiers{k}.numPts = frontiers{k}.numPts + 1;
+                    numXPts = newIndex;
+                else
+                    oldEnd = frontiers{k}.numPts;
+                    frontiers{k}.inds = [frontiers{k}.inds frontiers{kOther}.inds(nearIndex:end) ...
+                        frontiers{kOther}.inds(nearIndex:end) frontiers{kOther}.inds(1:nearIndex)];
+                    frontiers{k}.numPts = length(frontiers{k}.inds);
+                    updateInds = [1, oldEnd, oldEnd + 1, frontiers{k}.numPts];
+                    frontiers{k}.edgeAngles(updateInds) = ...
+                        updateEdgeAngles(frontiers{k}, ...
+                        x, gradX, updateInds);
+                    frontiers{kOther}.numPts = 0;
                 end
                 
                     

@@ -9,24 +9,24 @@ gamma = 2.5977;%0.6525;%1/L0^2;
 
 % % load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
 % load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
-% load 'bmw_total'
-load  'bmw_11'
-% For bmw_11
-cx = -6.1655;
-cy = -0.0472;
-cz = -3.6693;
+% % load 'bmw_total'
+% load  'bmw_11'
+% % For bmw_11
+% cx = -6.1655;
+% cy = -0.0472;
+% cz = -3.6693;
+% 
+% a = 1.0763;
+% b = 2.3691;
+% c = 1.3254;
+% locations = PartMeans;
+% surfNormals = SurfNormals;
+% 
 
-a = 1.0763;
-b = 2.3691;
-c = 1.3254;
-locations = PartMeans;
-surfNormals = SurfNormals;
-
-
- 
+%Simple case
+r = 1;
 locations = r * [[1;0;0] [0;1;0] [0;0;1]];
 surfNormals = [[0.7;0.7;0] [0;1;0] [0;1;0]];
-%Simple case
 
 cx = 0;
 cy = 0;
