@@ -50,7 +50,7 @@ frontiers{1}.numPts = 3;
 frontiers{1}.edgeAngles = 3;
 
 numFrontiers = 1;
-nMax = 4000;
+nMax = 10000;
 faces = [1 2 3];
 j = 1;
 numPts = 3;
