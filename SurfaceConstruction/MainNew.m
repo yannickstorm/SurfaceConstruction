@@ -1,10 +1,11 @@
 close all
 addpath('covMat')
 
-sigma =   .1;
-gamma =  0.8;
-noiseVals =   0.00001;
-noiseGrad =    0.00001;
+noiseVals = 0.00000;
+noiseGrad = 0.037;
+sigma = 0.1243;%0.2844; %0.1
+L0 = .2823; 
+gamma = 2.5977;%0.6525;%1/L0^2;
 r = 1;
 
 % load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
@@ -23,7 +24,12 @@ meanValue = @(x)(r/2 * ((x-loc)' * A * (x-loc) - 1));
 meanGrad = @(x)(r * A * (x-loc));
 
 dist = 0.5;
-initPoint = locations(:,1);%r * [1;0;0];
+initPoint = locations(:,8);%r * [-4;0;-2];
+
+figure
+hold on
+axis equal
+
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...

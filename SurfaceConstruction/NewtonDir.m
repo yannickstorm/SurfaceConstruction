@@ -1,14 +1,26 @@
-function x = NewtonDir(xIn, f, grad)
+function x = NewtonDir(xIn, f_plus)
 
-dir = grad(xIn);
+f_tot = f_plus(xIn);
+
+dir = f_tot(2:end);
 dir = dir/norm(dir);
 x = xIn;
-err = abs(f(x));
-while err > 1e-5
-    fCurrent = f(x);
-    gradCurrent = grad(x);
+err = f_tot(1);
+i = 0;
+while err > 1e-14
+    i = i + 1
+    f_tot = f_plus(x);
+    fCurrent = f_tot(1);
+    gradCurrent = f_tot(2:end);
     gradDir = gradCurrent' * dir;
 	x = x - fCurrent/gradDir * dir;
-    err = abs(f(x));
+    f_tot = f_plus(x);
+    gradCurrent = f_tot(2:end);
+    err = abs(f_tot(1))/norm(gradCurrent);
+    
+%     if(i > 10)
+%        disp('asdfasdf');
+%        break;
+%     end
 end
     
