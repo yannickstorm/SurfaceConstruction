@@ -14,24 +14,24 @@ f = @(x)(meanValue(x) + fGP(x));
 grad = @(x)(meanGrad(x) + gradGP(x));
 
 x(:,1) = initPoint;
-x(:,1) = NewtonOneStep(x(:,1), f, grad);
+x(:,1) = NewtonDir(x(:,1), f, grad);
 gradX(:,1) = grad(x(:,1));
 
 gradInit = gradX(:,1);
 perpVector = cross(gradInit,rand(3,1));
 normPerpVector = perpVector/norm(perpVector);
 x(:,2) = x(:,1) + dist * normPerpVector;
-x(:,2) = NewtonOneStep(x(:,2), f, grad);
+x(:,2) = NewtonDir(x(:,2), f, grad);
 gradX(:,2) = grad(x(:,2));
 
 x(:,3) = thirdPoint(x(:,1), x(:,2), ...
     grad(x(:,1)), grad(x(:,1)), ...
     dist, 1);
-x(:,3) = NewtonOneStep(x(:,3), f, grad);
+x(:,3) = NewtonDir(x(:,3), f, grad);
 gradX(:,3) = grad(x(:,3));
 
 if plot
-    figure
+%     figure
     axis equal
     hold on
     set(gca,'view',[-116.0000   -2.8000]);
@@ -75,7 +75,7 @@ while numFrontiers > 0 && j < nMax
         nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.9*dist);
         if (nearIndex == 0)
             newIndex = numPts + 1;
-            xCand = NewtonOneStep(xCand, f, grad);
+            xCand = NewtonDir(xCand, f, grad);
             if plot
                 candidatePoint2 = plot3(xCand(1) , xCand(2), xCand(3), 'ro');
             end

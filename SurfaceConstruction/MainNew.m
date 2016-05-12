@@ -1,11 +1,11 @@
 close all
 addpath('covMat')
 
-sigma =   .1;
-gamma =  0.8;
-noiseVals =   0.00001;
-noiseGrad =    0.00001;
-r = 1;
+noiseVals = 0.00000;
+noiseGrad = 0.037;
+sigma = 0.1243;%0.2844; %0.1
+L0 = .2823; 
+gamma = 2.5977;%0.6525;%1/L0^2;
 
 % % load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
 % load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
@@ -19,13 +19,32 @@ load  'bmw_11'
 locations = PartMeans;
 surfNormals = SurfNormals;
 
-A = 1/r^2 * eye(3);
-loc = [0 0 0.1]';
-meanValue = @(x)(r/2 * ((x-loc)' * A * (x-loc) - 1));
-meanGrad = @(x)(r * A * (x-loc));
+% For bmw_11
+cx = -6.1655;
+cy = -0.0472;
+cz = -3.6693;
 
-dist = 0.1;
-initPoint = locations(:,1);%r * [1;0;0];
+a = 1.0763;
+b = 2.3691;
+c = 1.3254;
+
+A = diag([1/a^2, 1/b^2, 1/c^2]);
+loc = [cx cy cz]';
+meanValue = @(x)(a/2 * ((x-loc)' * A * (x-loc) - 1));
+meanGrad = @(x)(a * A * (x-loc));
+
+dist = 0.5;
+initPoint = locations(:,1);%r * [-4;0;-2];
+
+figure
+hold on
+axis equal
+
+plot3(locations(1,:),locations(2,:),locations(3,:),'r.','markersize',30);
+quiver3(locations(1,:),locations(2,:),locations(3,:),...
+    surfNormals(1,:),surfNormals(2,:),surfNormals(3,:),'linewidth',2,'color','r');
+
+
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
