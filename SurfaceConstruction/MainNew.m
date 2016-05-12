@@ -33,7 +33,7 @@ loc = [cx cy cz]';
 meanValue = @(x)(a/2 * ((x-loc)' * A * (x-loc) - 1));
 meanGrad = @(x)(a * A * (x-loc));
 
-dist = 0.5;
+dist = 0.2;
 initPoint = locations(:,1);%r * [-4;0;-2];
 
 figure
