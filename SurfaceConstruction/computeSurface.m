@@ -7,31 +7,34 @@ fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad);
 covMatData = ComputeFullKder(sigma,gamma,locations,noiseVals,noiseGrad);
 RVector = covMatData\fPlusData;
 
-fGP = @(x)(covMatStarValue(sigma, gamma, x, locations) * RVector);
-gradGP = @(x)(covMatStarGrad(sigma, gamma, x, locations) * RVector);
+% fGP = @(x)(covMatStarValue(sigma, gamma, x, locations) * RVector);
+% gradGP = @(x)(covMatStarGrad(sigma, gamma, x, locations) * RVector);
+fPlusGP = @(x)(CovMatStar(sigma, gamma, x, locations) * RVector);
 
-f = @(x)(meanValue(x) + fGP(x));
-grad = @(x)(meanGrad(x) + gradGP(x));
+% f = @(x)(meanValue(x) + fGP(x));
+% grad = @(x)(meanGrad(x) + gradGP(x));
+fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 
-x(:,1) = initPoint;
-x(:,1) = NewtonDir(x(:,1), f, grad);
-gradX(:,1) = grad(x(:,1));
+[xNew,fGrad] = NewtonDirFPlus(initPoint, fPlus);
+x(:,1) = xNew;
+gradX(:,1) = fGrad(2:end);
 
-gradInit = gradX(:,1);
 randVec = [0.8181;
     0.8175;
     0.7224]; % random vector for consistency in results
-perpVector = cross(gradInit,randVec);
+perpVector = cross(gradX(:,1),randVec);
 normPerpVector = perpVector/norm(perpVector);
-x(:,2) = x(:,1) + dist * normPerpVector;
-x(:,2) = NewtonDir(x(:,2), f, grad);
-gradX(:,2) = grad(x(:,2));
+xCand = x(:,1) + dist * normPerpVector;
+[xNew,fGrad] = NewtonDirFPlus(xCand, fPlus);
+x(:,2) = xNew;
+gradX(:,2) = fGrad(2:end);
 
-x(:,3) = thirdPoint(x(:,1), x(:,2), ...
-    grad(x(:,1)), grad(x(:,1)), ...
+xCand = thirdPoint(x(:,1), x(:,2), ...
+    gradX(:,1), gradX(:,2), ...
     dist, 1);
-x(:,3) = NewtonDir(x(:,3), f, grad);
-gradX(:,3) = grad(x(:,3));
+[xNew,fGrad] = NewtonDirFPlus(xCand, fPlus);
+x(:,3) = xNew;
+gradX(:,3) = fGrad(2:end);
 
 if plot
 %     figure
@@ -112,13 +115,14 @@ while numFrontiers > 0 && j < nMax
             nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.9*dist);
             if (nearIndex == 0)
                 newIndex = numPts + 1;
-                xCand = NewtonDir(xCand, f, grad);
+                [xNew,fGrad] = NewtonDirFPlus(xCand, fPlus);
+                x(:,newIndex) = xNew;
+                gradX(:,newIndex) = fGrad(2:end);
                 if plot
-                    candidatePoint2 = plot3(xCand(1) , xCand(2), xCand(3), 'ro');
+                    candidatePoint2 = plot3(x(1,newIndex) , ...
+                        x(2,newIndex) , ...
+                        x(3,newIndex) , 'ro');
                 end
-                
-                x(:,newIndex) = xCand;
-                gradX(:,newIndex) = grad(x(:,newIndex));
                 faces = [faces; [index1, newIndex, index2]];
                 
                 frontiers{k}.inds = [frontiers{k}.inds newIndex];
@@ -215,7 +219,9 @@ while numFrontiers > 0 && j < nMax
                 delete(candidatePoint2);
             end
         end
-        delete(activeEdge);
+        if plot
+            delete(activeEdge);
+        end
         
     end
     frontiers = [frontiers newFrontiers];
