@@ -41,7 +41,7 @@ loc = [cx cy cz]';
 meanValue = @(x)(a/2 * ((x-loc)' * A * (x-loc) - 1));
 meanGrad = @(x)(a * A * (x-loc));
 
-dist = 0.5;
+dist = 0.4;
 initPoint = locations(:,1);%r * [-4;0;-2];
 
 figure
@@ -56,7 +56,7 @@ quiver3(locations(1,:),locations(2,:),locations(3,:),...
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoint, dist, true);
+    meanValue, meanGrad, initPoint, dist, false);
 
 figure
 hold on
@@ -71,3 +71,4 @@ patch('faces',faces,'vertices',vertices,...
     'facecolor',[0.5 0.5 0.5], ...
     'edgecolor', 'none');
 camlight
+set(gca,'view',[46.8000   18.8000]);
