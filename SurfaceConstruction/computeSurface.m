@@ -18,7 +18,10 @@ x(:,1) = NewtonDir(x(:,1), f, grad);
 gradX(:,1) = grad(x(:,1));
 
 gradInit = gradX(:,1);
-perpVector = cross(gradInit,rand(3,1));
+randVec = [0.8181;
+    0.8175;
+    0.7224]; % random vector for consistency in results
+perpVector = cross(gradInit,randVec);
 normPerpVector = perpVector/norm(perpVector);
 x(:,2) = x(:,1) + dist * normPerpVector;
 x(:,2) = NewtonDir(x(:,2), f, grad);
