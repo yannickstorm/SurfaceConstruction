@@ -173,41 +173,57 @@ while numFrontiers > 0 && j < nMax
                     x(:,frontiers{k}.inds(end - 1)),...
                     x(:,frontiers{k}.inds(1)),...
                     gradX(:,frontiers{k}.inds(end)));
-            else
-                newIndex = numPts + 1;
-                [xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
-                x(:,newIndex) = xNew;
-                gradX(:,newIndex) = fGrad(2:end);
-                if plot
-                    candidatePoint2 = plot3(x(1,newIndex) , ...
-                        x(2,newIndex) , ...
-                        x(3,newIndex) , 'ro');
-                end
-                faces = [faces; [index1, newIndex, index2]];
-                
-                frontiers{k}.inds = [frontiers{k}.inds newIndex];
-                frontiers{k}.edgeAngles = [frontiers{k}.edgeAngles pi];
-                frontiers{k}.edgeAngles(1) = edgeAngle(...
-                    x(:,frontiers{k}.inds(1)),...
-                    x(:,frontiers{k}.inds(end)),...
-                    x(:,frontiers{k}.inds(2)),...
-                    gradX(:,frontiers{k}.inds(1)));
-                frontiers{k}.edgeAngles(end - 1) = edgeAngle(...
-                    x(:,frontiers{k}.inds(end - 1)),...
-                    x(:,frontiers{k}.inds(end - 2)),...
-                    x(:,frontiers{k}.inds(end)),...
-                    gradX(:,frontiers{k}.inds(end - 1)));
-                if plot
-                    plot3(x(1,[index1 newIndex index2]), ...
-                        x(2,[index1 newIndex index2]), ...
-                        x(3,[index1 newIndex index2]), 'bo-');
-                    if gradients
-                        quiver3(x(1,newIndex) , x(2,newIndex), x(3,newIndex),...
-                            gradX(1,newIndex) , gradX(2,newIndex), gradX(3,newIndex),0);
+            elseif (nearIndex == 0)
+                %%%%%%%%%%%%%%%
+                % Check for intersection with other frontiers
+                intersectWithOther = false;
+                for kOther = 1:numFrontiers
+                    if kOther ~= k
+                        nearIndex = check(xCand, x(:,frontiers{kOther}.inds), 0.9*dist);
+                        if (nearIndex ~= 0)
+                            intersectWithOther = true;
+                            
+                        end
                     end
                 end
-                numPts = newIndex;
-                frontiers{k}.numPts = frontiers{k}.numPts + 1;
+                if intersectWithOther == false
+                    newIndex = numPts + 1;
+                    [xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
+                    x(:,newIndex) = xNew;
+                    gradX(:,newIndex) = fGrad(2:end);
+                    if plot
+                        candidatePoint2 = plot3(x(1,newIndex) , ...
+                            x(2,newIndex) , ...
+                            x(3,newIndex) , 'ro');
+                    end
+                    faces = [faces; [index1, newIndex, index2]];
+                    
+                    frontiers{k}.inds = [frontiers{k}.inds newIndex];
+                    frontiers{k}.edgeAngles = [frontiers{k}.edgeAngles pi];
+                    frontiers{k}.edgeAngles(1) = edgeAngle(...
+                        x(:,frontiers{k}.inds(1)),...
+                        x(:,frontiers{k}.inds(end)),...
+                        x(:,frontiers{k}.inds(2)),...
+                        gradX(:,frontiers{k}.inds(1)));
+                    frontiers{k}.edgeAngles(end - 1) = edgeAngle(...
+                        x(:,frontiers{k}.inds(end - 1)),...
+                        x(:,frontiers{k}.inds(end - 2)),...
+                        x(:,frontiers{k}.inds(end)),...
+                        gradX(:,frontiers{k}.inds(end - 1)));
+                    if plot
+                        plot3(x(1,[index1 newIndex index2]), ...
+                            x(2,[index1 newIndex index2]), ...
+                            x(3,[index1 newIndex index2]), 'bo-');
+                        if gradients
+                            quiver3(x(1,newIndex) , x(2,newIndex), x(3,newIndex),...
+                                gradX(1,newIndex) , gradX(2,newIndex), gradX(3,newIndex),0);
+                        end
+                    end
+                    numPts = newIndex;
+                    frontiers{k}.numPts = frontiers{k}.numPts + 1;
+                end
+                
+                    
                 
             end
             if plot
@@ -225,18 +241,6 @@ while numFrontiers > 0 && j < nMax
     newFrontiers = {};
     numNewFrontiers = 0;
     
-    if plot
-        for k = 1:numFrontiers
-            frontiers{k}.plot = plotFrontier(gca, frontiers{k}, x);
-        end
-        drawnow
-        for k = 1:numFrontiers
-            delete(frontiers{k}.plot);
-        end
-    end
-    
-    j = j + 1;
-    
     for k = 1:numFrontiers
         if frontiers{k}.numPts < 3
             removeFrontiers = [removeFrontiers k];
@@ -249,5 +253,21 @@ while numFrontiers > 0 && j < nMax
     frontiers(removeFrontiers) = [];
     numFrontiers = numFrontiers - length(removeFrontiers);
     removeFrontiers = [];
+    
+    
+    %%%%%%%%%%%%%%%
+    % All done, now plot frontiers
+    if plot
+        for k = 1:numFrontiers
+            frontiers{k}.plot = plotFrontier(gca, frontiers{k}, x);
+        end
+        drawnow
+        for k = 1:numFrontiers
+            delete(frontiers{k}.plot);
+        end
+    end
+    
+    j = j + 1;
+    
 end
 vertices = x';

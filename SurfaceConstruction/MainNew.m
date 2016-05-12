@@ -23,25 +23,25 @@ locations = PartMeans;
 surfNormals = SurfNormals;
 
 
-%  
-% locations = r * [[1;0;0] [0;1;0] [0;0;1]];
-% surfNormals = [[0.7;0.7;0] [0;1;0] [0;1;0]];
-% %Simple case
-% 
-% cx = 0;
-% cy = 0;
-% cz = 0;
-% 
-% a = 1;
-% b = 1;
-% c = inf;
+ 
+locations = r * [[1;0;0] [0;1;0] [0;0;1]];
+surfNormals = [[0.7;0.7;0] [0;1;0] [0;1;0]];
+%Simple case
+
+cx = 0;
+cy = 0;
+cz = 0;
+
+a = 1;
+b = 1;
+c = inf;
 
 A = diag([1/a^2, 1/b^2, 1/c^2]);
 loc = [cx cy cz]';
 meanValue = @(x)(a/2 * ((x-loc)' * A * (x-loc) - 1));
 meanGrad = @(x)(a * A * (x-loc));
 
-dist = 0.4;
+dist = 0.6;
 initPoint = locations(:,1);%r * [-4;0;-2];
 
 figure
@@ -56,7 +56,7 @@ quiver3(locations(1,:),locations(2,:),locations(3,:),...
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoint, dist, false);
+    meanValue, meanGrad, initPoint, dist, true);
 
 figure
 hold on
