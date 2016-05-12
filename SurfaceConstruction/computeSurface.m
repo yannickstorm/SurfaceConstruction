@@ -4,18 +4,14 @@ function [faces, vertices] = computeSurface(locations, surfNormals, ...
 
 fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad);
 
-covMatData = ComputeFullKder(sigma,gamma,locations,noiseVals,noiseGrad);
+covMatData = ComputeCovMatFull(sigma,gamma,locations,noiseVals,noiseGrad);
 RVector = covMatData\fPlusData;
 
-% fGP = @(x)(covMatStarValue(sigma, gamma, x, locations) * RVector);
-% gradGP = @(x)(covMatStarGrad(sigma, gamma, x, locations) * RVector);
 fPlusGP = @(x)(CovMatStar(sigma, gamma, x, locations) * RVector);
 
-% f = @(x)(meanValue(x) + fGP(x));
-% grad = @(x)(meanGrad(x) + gradGP(x));
 fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 
-[xNew,fGrad] = NewtonDirFPlus(initPoint, fPlus);
+[xNew,fGrad] = NewtonOneStepFPlus(initPoint, fPlus);
 x(:,1) = xNew;
 gradX(:,1) = fGrad(2:end);
 
@@ -25,14 +21,14 @@ randVec = [0.8181;
 perpVector = cross(gradX(:,1),randVec);
 normPerpVector = perpVector/norm(perpVector);
 xCand = x(:,1) + dist * normPerpVector;
-[xNew,fGrad] = NewtonDirFPlus(xCand, fPlus);
+[xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
 x(:,2) = xNew;
 gradX(:,2) = fGrad(2:end);
 
 xCand = thirdPoint(x(:,1), x(:,2), ...
     gradX(:,1), gradX(:,2), ...
     dist, 1);
-[xNew,fGrad] = NewtonDirFPlus(xCand, fPlus);
+[xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
 x(:,3) = xNew;
 gradX(:,3) = fGrad(2:end);
 
@@ -115,7 +111,7 @@ while numFrontiers > 0 && j < nMax
             nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.9*dist);
             if (nearIndex == 0)
                 newIndex = numPts + 1;
-                [xNew,fGrad] = NewtonDirFPlus(xCand, fPlus);
+                [xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
                 x(:,newIndex) = xNew;
                 gradX(:,newIndex) = fGrad(2:end);
                 if plot
