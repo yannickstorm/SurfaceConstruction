@@ -28,12 +28,12 @@ R = @(r) ([     (r(1)^2 - r(2)^2 - r(3)^2) * si2(r)  + norm(r)^2 * cs2(r)    , 2
              , 2 * si(r)* (r(1)*r(3)*si(r) + norm(r) * r(2) * cs(r)) , 2 * si(r)* (r(2)*r(3)*si(r) - norm(r) * r(1) * cs(r)),   (r(3)^2 - r(1)^2 - r(2)^2) * si2(r)  + norm(r)^2 * cs2(r)  ]/norm(r)^2);
 
 
-Rot = R([-6.0233         0    0.1086]);
+Rot = [1 0 0; 0 1 0; 0 0 1];%R([-6.0233         0    0.1086]);
 Object.Loc = [cx; cy; cz];
 prior_type = 'E';
 With_normals = 1;
 
-fPlusData = ComputeFplus(locations,surfNormals,Object,cx,cy,cz,a,b,c,Rot,prior_type, With_normals);
+fPlusData = ComputeFplus(locations,surfNormals,Object,cx,cy,cz,a,b,c,Rot,prior_type, With_normals)
 
 covMatData = ComputeFullKder(sigma,gamma,locations,noiseVals,noiseGrad,With_normals);
 RVector = covMatData\fPlusData;
