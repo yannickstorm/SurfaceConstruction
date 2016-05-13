@@ -9,8 +9,9 @@ gamma = 2.5977;%0.6525;%1/L0^2;
 
 % % load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
 % load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
-% % load 'bmw_total'
+% load 'bmw_total'
 % load  'bmw_11'
+
 % % For bmw_11
 % cx = -6.1655;
 % cy = -0.0472;
@@ -21,12 +22,12 @@ gamma = 2.5977;%0.6525;%1/L0^2;
 % c = 1.3254;
 % locations = PartMeans;
 % surfNormals = SurfNormals;
-% 
+
 
 %Simple case
 r = 1;
-locations = r * [[1;0;0] [0;-1;-1] [0;0;1]];
-surfNormals = [[0.7;0.7;0] [-0.7;-0.7;0] [0;1;0]];
+locations = r * [[1;0;0] [0;-1;-1] [0;0;1] [0;0;1.1]];
+surfNormals = [[0.7;0.7;0] [-0.7;-0.7;0] [0;1;0] [0;1;0]];
 
 cx = 0;
 cy = 0;
@@ -41,8 +42,8 @@ loc = [cx cy cz]';
 meanValue = @(x)(a/2 * ((x-loc)' * A * (x-loc) - 1));
 meanGrad = @(x)(a * A * (x-loc));
 
-dist = 0.5;
-initPoints = locations(:,1:3);%r * [-4;0;-2];
+dist = 0.2;
+initPoints = locations;%r * [-4;0;-2];
 
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...

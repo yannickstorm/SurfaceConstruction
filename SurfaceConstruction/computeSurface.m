@@ -26,7 +26,9 @@ if plot
     set(gca,'view',[-116.0000   -2.8000]);
 end
 
-numInitPoints = size(initPoints, 2);
+initPoints = reduceInitPoints(initPoints, dist);
+
+numInitPoints = size(initPoints, 2)
 frontiers = cell(1, numInitPoints);
 x = [];
 gradX = [];
@@ -108,7 +110,7 @@ while numFrontiers > 0 && j < jMax
             if plot
                 candidatePoint = plot3(xCand(1) , xCand(2), xCand(3), 'go');
             end
-            nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.5*dist);
+            nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.8*dist);
             if (nearIndex == frontiers{k}.numPts - 1)
                 % Candidate point close enough to previous edge point
                 faces = [faces; [index1, frontiers{k}.inds(end - 1), index2]];
@@ -151,7 +153,6 @@ while numFrontiers > 0 && j < jMax
                 newFrontiers{numNewFrontiers}.edgeAngles(updateInds) = ...
                     updateEdgeAngles(newFrontiers{numNewFrontiers}, ...
                     x, gradX, updateInds);
-                
                 frontiers{k}.inds = frontiers{k}.inds(1:nearIndex);
                 frontiers{k}.numPts = length(frontiers{k}.inds);
                 frontiers{k}.edgeAngles = frontiers{k}.edgeAngles(1:nearIndex);
