@@ -9,8 +9,8 @@ gamma = 2.5977;%0.6525;%1/L0^2;
 
 % % load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
 % load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
-% load 'bmw_total'
-load  'bmw_11'
+load 'bmw_total'
+% load  'bmw_11'
 locations = PartMeans;
 surfNormals = SurfNormals;
 
@@ -29,13 +29,13 @@ surfNormals = SurfNormals;
 
 [meanValue, meanGrad] = computePriorFunctions(Prior)
 
-dist = .2;
-initPoints = locations(:,1);%r * [-4;0;-2];
+dist = .4;
+initPoints = locations;%r * [-4;0;-2];
 
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     Prior, ...
-    meanValue, meanGrad, initPoints, dist, false);
+    meanValue, meanGrad, initPoints, dist, true);
 
 figure
 hold on
