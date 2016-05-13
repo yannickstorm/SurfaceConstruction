@@ -1,4 +1,4 @@
-function [x, gradX, frontier] = initialiseFrontier(initPoint, fPlus, dist)
+function [x, gradX, frontier] = initialiseFrontier(initPoint, fPlus, dist, inds)
 
 [xNew,fGrad] = NewtonOneStepFPlus(initPoint, fPlus);
 x(:,1) = xNew;
@@ -21,6 +21,6 @@ xCand = thirdPoint(x(:,1), x(:,2), ...
 x(:,3) = xNew;
 gradX(:,3) = fGrad(2:end);
 
-frontier.inds = [1 2 3];
+frontier.inds = inds;
 frontier.numPts = 3;
 frontier.edgeAngles = [pi pi pi];

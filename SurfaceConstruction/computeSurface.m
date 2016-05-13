@@ -1,6 +1,6 @@
 function [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoint, dist, plot)
+    meanValue, meanGrad, initPoints, dist, plot)
 
 fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad);
 
@@ -11,32 +11,46 @@ fPlusGP = @(x)(CovMatStar(sigma, gamma, x, locations) * RVector);
 
 fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 
-[x, gradX, frontier] = initialiseFrontier(initPoint, fPlus, dist);
-frontiers{1} = frontier;
-faces = [1 2 3];
-
 if plot
     %     figure
+	gradients = false;
     axis equal
     hold on
     set(gca,'view',[-116.0000   -2.8000]);
-    gradients = true;
-    plot3(x(1,[1:3 1]) , x(2,[1:3 1]), x(3,[1:3 1]), 'bo-')
-    if gradients
-        quiver3(x(1,[1:3]) , x(2,[1:3]), x(3,[1:3]),...
-            gradX(1,[1:3]) , gradX(2,[1:3]), gradX(3,[1:3]),0);
+end
+
+numInitPoints = size(initPoints, 2);
+frontiers = cell(1, numInitPoints);
+x = [];
+gradX = [];
+faces = [];
+for k = 1:numInitPoints
+    inds = (k - 1) * 3 + (1:3);
+    [xNew, gradXNew, frontierNew] = initialiseFrontier(initPoints(:,k), fPlus, dist,inds);
+    frontiers{k} = frontierNew;
+    x = [x xNew];
+    gradX = [gradX gradXNew];
+    faces = [faces; inds];    
+    if plot
+        %     figure
+        plot3(x(1,[inds inds(1)]) , x(2,[inds inds(1)]), x(3,[inds inds(1)]), 'bo-')
+        if gradients
+            quiver3(x(1,inds) , x(2,inds), x(3,inds),...
+                gradX(1,inds) , gradX(2,inds), gradX(3,inds),0);
+        end
     end
 end
 
 
 numFrontiers = length(frontiers);
+frontierPlots = [];
 
-numXPts = 3;
+numXPts = 3 * k;
 removeFrontiers = [];
 newFrontiers = {};
 numNewFrontiers = 0;
 
-jMax = 10000;
+jMax = 500;
 j = 1;
 while numFrontiers > 0 && j < jMax
     
@@ -53,19 +67,21 @@ while numFrontiers > 0 && j < jMax
                 x(3,[index1 index2]), 'm-','linewidth',4);
         end
         
-        if frontiers{k}.edgeAngles(end) < pi/2
+        if frontiers{k}.edgeAngles(end) < 1 * pi/3
+            % Angle at ending edge node small enough to close gap immediately
             faces = [faces; [index1, frontiers{k}.inds(end - 1), index2]];
             if plot
-                plot3(x(1,[index1 frontiers{k}.inds(end - 1)]), ...
-                    x(2,[index1 frontiers{k}.inds(end - 1)]), ...
-                    x(3,[index1 frontiers{k}.inds(end - 1)]), 'bo-');
+                plot3(x(1,[index2 frontiers{k}.inds(end - 1)]), ...
+                    x(2,[index2 frontiers{k}.inds(end - 1)]), ...
+                    x(3,[index2 frontiers{k}.inds(end - 1)]), 'bo-');
             end
             frontiers{k}.inds(end) = [];
             frontiers{k}.numPts = length(frontiers{k}.inds);
             frontiers{k}.edgeAngles(end) = [];
             frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
                 frontiers{k}.numPts);
-        elseif frontiers{k}.edgeAngles(1) < pi/2
+        elseif frontiers{k}.edgeAngles(1) < 1 * pi/3
+            % Angle at beginning edge node small enough to close gap immediately
             faces = [faces; [index1, frontiers{k}.inds(2), index2]];
             if plot
                 plot3(x(1,[index1 frontiers{k}.inds(2)]), ...
@@ -77,7 +93,7 @@ while numFrontiers > 0 && j < jMax
             frontiers{k}.edgeAngles(1) = [];
             frontiers{k}.edgeAngles(1) = updateEdgeAngles(frontiers{k}, x, gradX, 1);
         else
-            
+            % Generate new candidate point
             xCand = thirdPoint(...
                 x(:,index1),x(:,index2), ...
                 gradX(:,index1), gradX(:,index2), ...
@@ -85,13 +101,14 @@ while numFrontiers > 0 && j < jMax
             if plot
                 candidatePoint = plot3(xCand(1) , xCand(2), xCand(3), 'go');
             end
-            nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.9*dist);
+            nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.5*dist);
             if (nearIndex == frontiers{k}.numPts - 1)
+                % Candidate point close enough to previous edge point
                 faces = [faces; [index1, frontiers{k}.inds(end - 1), index2]];
                 if plot
-                    plot3(x(1,[index1 frontiers{k}.inds(end - 1)]), ...
-                        x(2,[index1 frontiers{k}.inds(end - 1)]), ...
-                        x(3,[index1 frontiers{k}.inds(end - 1)]), 'bo-');
+                    plot3(x(1,[index2 frontiers{k}.inds(end - 1)]), ...
+                        x(2,[index2 frontiers{k}.inds(end - 1)]), ...
+                        x(3,[index2 frontiers{k}.inds(end - 1)]), 'bo-');
                 end
                 frontiers{k}.inds(end) = [];
                 frontiers{k}.numPts = length(frontiers{k}.inds);
@@ -99,6 +116,7 @@ while numFrontiers > 0 && j < jMax
                 frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
                     frontiers{k}.numPts);
             elseif (nearIndex == 2)
+                % Candidate point close enough to next edge point
                 faces = [faces; [index1, frontiers{k}.inds(2), index2]];
                 if plot
                     plot3(x(1,[index1 frontiers{k}.inds(2)]), ...
@@ -110,6 +128,8 @@ while numFrontiers > 0 && j < jMax
                 frontiers{k}.edgeAngles(1) = [];
                 frontiers{k}.edgeAngles(1) = updateEdgeAngles(frontiers{k}, x, gradX, 1);
             elseif (nearIndex ~= 0)
+                % Candidate point close enough to other point on the
+                % surface: Split surface
                 numNewFrontiers = numNewFrontiers + 1;
                 faces = [faces; [index1, frontiers{k}.inds(nearIndex), index2]];
                 if plot
@@ -139,7 +159,7 @@ while numFrontiers > 0 && j < jMax
                 intersectWithOther = false;
                 for kOther = 1:numFrontiers
                     if kOther ~= k
-                        nearIndex = check(xCand, x(:,frontiers{kOther}.inds), 0.9*dist);
+                        nearIndex = check(xCand, x(:,frontiers{kOther}.inds), 0.5*dist);
                         if (nearIndex ~= 0)
                             intersectWithOther = true;
                             break
@@ -147,6 +167,7 @@ while numFrontiers > 0 && j < jMax
                     end
                 end
                 if intersectWithOther == false
+                    % We add a new point to the grid
                     newIndex = numXPts + 1;
                     [xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
                     x(:,newIndex) = xNew;
@@ -176,9 +197,16 @@ while numFrontiers > 0 && j < jMax
                     end
                     numXPts = newIndex;
                 else
+                    % Two frontiers are merged
+                    faces = [faces; [index1, frontiers{kOther}.inds(nearIndex), index2]];
+                    if plot
+                        plot3(x(1,[index1 frontiers{kOther}.inds(nearIndex) index2]), ...
+                            x(2,[index1 frontiers{kOther}.inds(nearIndex) index2]), ...
+                            x(3,[index1 frontiers{kOther}.inds(nearIndex) index2]), 'bo-');
+                    end
                     oldEnd = frontiers{k}.numPts;
                     frontiers{k}.inds = [frontiers{k}.inds frontiers{kOther}.inds(nearIndex:end) ...
-                        frontiers{kOther}.inds(nearIndex:end) frontiers{kOther}.inds(1:nearIndex)];
+                        frontiers{kOther}.inds(1:nearIndex)];
                     frontiers{k}.numPts = length(frontiers{k}.inds);
                     updateInds = [1, oldEnd, oldEnd + 1, frontiers{k}.numPts];
                     frontiers{k}.edgeAngles(updateInds) = ...
@@ -194,8 +222,10 @@ while numFrontiers > 0 && j < jMax
                 delete(candidatePoint);
                 delete(candidatePoint2);
             end
+            
         end
         if plot
+            frontierPlots = [frontierPlots plotFrontier(gca, frontiers{k}, x)];
             delete(activeEdge);
         end
         
@@ -220,15 +250,9 @@ while numFrontiers > 0 && j < jMax
     
     
     %%%%%%%%%%%%%%%
-    % All done, now plot frontiers
     if plot
-        for k = 1:numFrontiers
-            frontiers{k}.plot = plotFrontier(gca, frontiers{k}, x);
-        end
         drawnow
-        for k = 1:numFrontiers
-            delete(frontiers{k}.plot);
-        end
+        delete(frontierPlots);
     end
     
     j = j + 1;

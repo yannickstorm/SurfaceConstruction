@@ -25,8 +25,8 @@ gamma = 2.5977;%0.6525;%1/L0^2;
 
 %Simple case
 r = 1;
-locations = r * [[1;0;0] [0;1;0] [0;0;1]];
-surfNormals = [[0.7;0.7;0] [0;1;0] [0;1;0]];
+locations = r * [[1;0;0] [0;-1;-1] [0;0;1]];
+surfNormals = [[0.7;0.7;0] [-0.7;-0.7;0] [0;1;0]];
 
 cx = 0;
 cy = 0;
@@ -41,8 +41,8 @@ loc = [cx cy cz]';
 meanValue = @(x)(a/2 * ((x-loc)' * A * (x-loc) - 1));
 meanGrad = @(x)(a * A * (x-loc));
 
-dist = 0.6;
-initPoint = locations(:,1);%r * [-4;0;-2];
+dist = 0.3;
+initPoints = locations(:,1:2);%r * [-4;0;-2];
 
 figure
 hold on
@@ -56,7 +56,7 @@ quiver3(locations(1,:),locations(2,:),locations(3,:),...
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoint, dist, true);
+    meanValue, meanGrad, initPoints, dist, true);
 
 figure
 hold on
@@ -69,6 +69,8 @@ quiver3(locations(1,:),locations(2,:),locations(3,:),...
 
 patch('faces',faces,'vertices',vertices,...
     'facecolor',[0.5 0.5 0.5], ...
-    'edgecolor', 'none');
+    'edgecolor', 'none', ...
+    'facelighting','gouraud');
 camlight
 set(gca,'view',[46.8000   18.8000]);
+light('Position',[-1 -1 0])
