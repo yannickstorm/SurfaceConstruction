@@ -16,7 +16,7 @@ gradX(:,2) = fGrad(2:end);
 
 xCand = thirdPoint(x(:,1), x(:,2), ...
     gradX(:,1), gradX(:,2), ...
-    dist, 1);
+    dist, 1, sqrt(3)/2);
 [xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
 x(:,3) = xNew;
 gradX(:,3) = fGrad(2:end);

@@ -67,7 +67,7 @@ while numFrontiers > 0 && j < jMax
                 x(3,[index1 index2]), 'm-','linewidth',4);
         end
         
-        if frontiers{k}.edgeAngles(end) < 1 * pi/3
+        if frontiers{k}.edgeAngles(end) < pi/2
             % Angle at ending edge node small enough to close gap immediately
             faces = [faces; [index1, frontiers{k}.inds(end - 1), index2]];
             if plot
@@ -80,7 +80,7 @@ while numFrontiers > 0 && j < jMax
             frontiers{k}.edgeAngles(end) = [];
             frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
                 frontiers{k}.numPts);
-        elseif frontiers{k}.edgeAngles(1) < 1 * pi/3
+        elseif frontiers{k}.edgeAngles(1) < pi/2
             % Angle at beginning edge node small enough to close gap immediately
             faces = [faces; [index1, frontiers{k}.inds(2), index2]];
             if plot
@@ -97,7 +97,7 @@ while numFrontiers > 0 && j < jMax
             xCand = thirdPoint(...
                 x(:,index1),x(:,index2), ...
                 gradX(:,index1), gradX(:,index2), ...
-                dist, -1);
+                dist, -1, 0.5);
             if plot
                 candidatePoint = plot3(xCand(1) , xCand(2), xCand(3), 'go');
             end
@@ -167,7 +167,11 @@ while numFrontiers > 0 && j < jMax
                     end
                 end
                 if intersectWithOther == false
-                    % We add a new point to the grid
+                    % We add a new point to the grid 
+                    xCand = thirdPoint(...
+                        x(:,index1),x(:,index2), ...
+                        gradX(:,index1), gradX(:,index2), ...
+                        dist, -1, sqrt(3)/2);
                     newIndex = numXPts + 1;
                     [xNew,fGrad] = NewtonOneStepFPlus(xCand, fPlus);
                     x(:,newIndex) = xNew;

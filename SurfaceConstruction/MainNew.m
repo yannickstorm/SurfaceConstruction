@@ -41,8 +41,8 @@ loc = [cx cy cz]';
 meanValue = @(x)(a/2 * ((x-loc)' * A * (x-loc) - 1));
 meanGrad = @(x)(a * A * (x-loc));
 
-dist = 0.3;
-initPoints = locations(:,1:2);%r * [-4;0;-2];
+dist = 0.5;
+initPoints = locations(:,1:3);%r * [-4;0;-2];
 
 figure
 hold on
@@ -56,7 +56,7 @@ quiver3(locations(1,:),locations(2,:),locations(3,:),...
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
-    meanValue, meanGrad, initPoints, dist, true);
+    meanValue, meanGrad, initPoints, dist, false);
 
 figure
 hold on
