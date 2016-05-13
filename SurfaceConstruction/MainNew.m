@@ -11,6 +11,8 @@ gamma = 2.5977;%0.6525;%1/L0^2;
 % load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
 % load 'bmw_total'
 load  'bmw_11'
+locations = PartMeans;
+surfNormals = SurfNormals;
 
 % For bmw_11
 cx = -6.1655;
@@ -20,30 +22,15 @@ cz = -3.6693;
 a = 1.0763;
 b = 2.3691;
 c = 1.3254;
-locations = PartMeans;
-surfNormals = SurfNormals;
+r = [2 * pi , 0, 0];
+prior_type = 'E'
 
+Prior = struct('pos',[cx cy cz],'type',prior_type, 'param', [a b c], 'rot', r);
 
-% %Simple case
-% r = 1;
-% locations = r * [[1;0;0] [0;-1;-1] [0;0;1] [0;0;1.1]];
-% surfNormals = [[0.7;0.7;0] [-0.7;-0.7;0] [0;1;0] [0;1;0]];
-% 
-% cx = 0;
-% cy = 0;
-% cz = 0;
-% 
-% a = 1;
-% b = 1;
-% c = inf;
-
-A = diag([1/a^2, 1/b^2, 1/c^2]);
-loc = [cx cy cz]';
-meanValue = @(x)(a/2 * ((x-loc)' * A * (x-loc) - 1));
-meanGrad = @(x)(a * A * (x-loc));
+[meanValue, meanGrad] = computePriorFunctions(Prior)
 
 dist = .2;
-initPoints = locations;%r * [-4;0;-2];
+initPoints = locations(:,1);%r * [-4;0;-2];
 
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
