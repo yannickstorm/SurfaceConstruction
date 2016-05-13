@@ -12,10 +12,17 @@ fPlusGP = @(x)(CovMatStar(sigma, gamma, x, locations) * RVector);
 fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 
 if plot
-    %     figure
-	gradients = false;
-    axis equal
+    gradients = false;
+    
+    figure
+	axis equal
     hold on
+    
+    plot3(locations(1,:),locations(2,:),locations(3,:),'r.','markersize',30);
+    quiver3(locations(1,:),locations(2,:),locations(3,:),...
+        surfNormals(1,:),surfNormals(2,:),surfNormals(3,:),'linewidth',2,'color','r');
+    
+
     set(gca,'view',[-116.0000   -2.8000]);
 end
 

@@ -44,15 +44,6 @@ meanGrad = @(x)(a * A * (x-loc));
 dist = 0.5;
 initPoints = locations(:,1:3);%r * [-4;0;-2];
 
-figure
-hold on
-axis equal
-
-plot3(locations(1,:),locations(2,:),locations(3,:),'r.','markersize',30);
-quiver3(locations(1,:),locations(2,:),locations(3,:),...
-    surfNormals(1,:),surfNormals(2,:),surfNormals(3,:),'linewidth',2,'color','r');
-
-
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     sigma, gamma, noiseVals, noiseGrad, ...
