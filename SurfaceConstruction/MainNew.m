@@ -14,18 +14,18 @@ load  'bmw_11'
 locations = PartMeans;
 surfNormals = SurfNormals;
 
-% For bmw_11
-cx = -6.1655;
-cy = -0.0472;
-cz = -3.6693;
-
-a = 1.0763;
-b = 2.3691;
-c = 1.3254;
-r = [2 * pi , 0, 0];
-prior_type = 'E'
-
-Prior = struct('pos',[cx cy cz],'type',prior_type, 'param', [a b c], 'rot', r);
+% % For bmw_11
+% cx = -6.1655;
+% cy = -0.0472;
+% cz = -3.6693;
+% 
+% a = 1.0763;
+% b = 2.3691;
+% c = 1.3254;
+% r = [2 * pi , 0, 0];
+% prior_type = 'E'
+% 
+% Prior = struct('pos',[cx cy cz],'type',prior_type, 'param', [a b c], 'rot', r);
 
 [meanValue, meanGrad] = computePriorFunctions(Prior)
 
@@ -34,7 +34,7 @@ initPoints = locations(:,1);%r * [-4;0;-2];
 
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
-    sigma, gamma, noiseVals, noiseGrad, ...
+    Prior, ...
     meanValue, meanGrad, initPoints, dist, false);
 
 figure

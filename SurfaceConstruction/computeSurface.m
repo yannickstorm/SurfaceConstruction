@@ -1,7 +1,10 @@
 function [faces, vertices] = computeSurface(locations, surfNormals, ...
-    sigma, gamma, noiseVals, noiseGrad, ...
+    Prior, ...
     meanValue, meanGrad, initPoints, dist, plot)
-
+sigma = Prior.Sigma;
+gamma = Prior.Gamma;
+noiseVals = Prior.noiseVals;
+noiseGrad = Prior.noiseGrad;
 fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad);
 
 covMatData = ComputeCovMatFull(sigma,gamma,locations,noiseVals,noiseGrad);
