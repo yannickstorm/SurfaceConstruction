@@ -59,12 +59,12 @@ removeFrontiers = [];
 newFrontiers = {};
 numNewFrontiers = 0;
 
-jMax = 500;
+jMax = 10000;
 j = 1;
 while numFrontiers > 0 && j < jMax
     
     for k = 1:numFrontiers
-        if frontiers{k}.numPts == 0
+        if frontiers{k}.numPts < 3
             continue
         end
         index1 = frontiers{k}.inds(end);
@@ -167,7 +167,7 @@ while numFrontiers > 0 && j < jMax
                 intersectWithOther = false;
                 for kOther = 1:numFrontiers
                     if kOther ~= k
-                        nearIndex = check(xCand, x(:,frontiers{kOther}.inds), 0.5*dist);
+                        nearIndex = check(xCand, x(:,frontiers{kOther}.inds), 0.8*dist);
                         if (nearIndex ~= 0)
                             intersectWithOther = true;
                             break
