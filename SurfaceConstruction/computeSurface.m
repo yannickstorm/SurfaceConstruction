@@ -70,6 +70,7 @@ while numFrontiers > 0 && j < jMax
         if frontiers{k}.numPts < 3
             continue
         end
+        
         index1 = frontiers{k}.inds(end);
         index2 = frontiers{k}.inds(1);
         
@@ -113,64 +114,14 @@ while numFrontiers > 0 && j < jMax
             if plot
                 candidatePoint = plot3(xCand(1) , xCand(2), xCand(3), 'go');
             end
-            nearIndex = check(xCand, x(:,frontiers{k}.inds), 0.8*dist);
-            if (nearIndex == frontiers{k}.numPts - 1)
-                % Candidate point close enough to previous edge point
-                faces = [faces; [index1, frontiers{k}.inds(end - 1), index2]];
-                if plot
-                    plot3(x(1,[index2 frontiers{k}.inds(end - 1)]), ...
-                        x(2,[index2 frontiers{k}.inds(end - 1)]), ...
-                        x(3,[index2 frontiers{k}.inds(end - 1)]), 'bo-');
-                end
-                frontiers{k}.inds(end) = [];
-                frontiers{k}.numPts = length(frontiers{k}.inds);
-                frontiers{k}.edgeAngles(end) = [];
-                frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
-                    frontiers{k}.numPts);
-            elseif (nearIndex == 2)
-                % Candidate point close enough to next edge point
-                faces = [faces; [index1, frontiers{k}.inds(2), index2]];
-                if plot
-                    plot3(x(1,[index1 frontiers{k}.inds(2)]), ...
-                        x(2,[index1 frontiers{k}.inds(2)]), ...
-                        x(3,[index1 frontiers{k}.inds(2)]), 'bo-');
-                end
-                frontiers{k}.inds(1) = [];
-                frontiers{k}.numPts = length(frontiers{k}.inds);
-                frontiers{k}.edgeAngles(1) = [];
-                frontiers{k}.edgeAngles(1) = updateEdgeAngles(frontiers{k}, x, gradX, 1);
-            elseif (nearIndex ~= 0)
-                % Candidate point close enough to other point on the
-                % surface: Split surface
-                numNewFrontiers = numNewFrontiers + 1;
-                faces = [faces; [index1, frontiers{k}.inds(nearIndex), index2]];
-                if plot
-                    plot3(x(1,[index1 frontiers{k}.inds(nearIndex) index2]), ...
-                        x(2,[index1 frontiers{k}.inds(nearIndex) index2]), ...
-                        x(3,[index1 frontiers{k}.inds(nearIndex) index2]), 'bo-');
-                end
-                newFrontiers{numNewFrontiers}.inds = frontiers{k}.inds(nearIndex:end);
-                newFrontiers{numNewFrontiers}.numPts = length(newFrontiers{numNewFrontiers}.inds);
-                newFrontiers{numNewFrontiers}.edgeAngles = frontiers{k}.edgeAngles(nearIndex:end);
-                updateInds = [1, newFrontiers{numNewFrontiers}.numPts];
-                newFrontiers{numNewFrontiers}.edgeAngles(updateInds) = ...
-                    updateEdgeAngles(newFrontiers{numNewFrontiers}, ...
-                    x, gradX, updateInds);
-                frontiers{k}.inds = frontiers{k}.inds(1:nearIndex);
-                frontiers{k}.numPts = length(frontiers{k}.inds);
-                frontiers{k}.edgeAngles = frontiers{k}.edgeAngles(1:nearIndex);
-                updateInds = [1, frontiers{k}.numPts];
-                frontiers{k}.edgeAngles(updateInds) = ...
-                    updateEdgeAngles(frontiers{k}, ...
-                    x, gradX, updateInds);
-                
-            elseif (nearIndex == 0)
+            nearIndex = check(xCand, x, frontiers{k}.inds, 0.8*dist);
+            if (nearIndex == 0)
                 %%%%%%%%%%%%%%%
                 % Check for intersection with other frontiers
                 intersectWithOther = false;
                 for kOther = 1:numFrontiers
                     if kOther ~= k
-                        nearIndex = check(xCand, x(:,frontiers{kOther}.inds), 0.8*dist);
+                        nearIndex = check(xCand, x, frontiers{kOther}.inds, 0.8*dist);
                         if (nearIndex ~= 0)
                             intersectWithOther = true;
                             break
@@ -229,9 +180,55 @@ while numFrontiers > 0 && j < jMax
                         x, gradX, updateInds);
                     frontiers{kOther}.numPts = 0;
                 end
-                
-                    
-                
+            elseif nearIndex == frontiers{k}.numPts - 1
+                % Candidate point close enough to previous edge point
+                faces = [faces; [index1, frontiers{k}.inds(end - 1), index2]];
+                if plot
+                    plot3(x(1,[index2 frontiers{k}.inds(end - 1)]), ...
+                        x(2,[index2 frontiers{k}.inds(end - 1)]), ...
+                        x(3,[index2 frontiers{k}.inds(end - 1)]), 'bo-');
+                end
+                frontiers{k}.inds(end) = [];
+                frontiers{k}.numPts = length(frontiers{k}.inds);
+                frontiers{k}.edgeAngles(end) = [];
+                frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
+                    frontiers{k}.numPts);
+            elseif nearIndex == 2
+                % Candidate point close enough to next edge point
+                faces = [faces; [index1, frontiers{k}.inds(2), index2]];
+                if plot
+                    plot3(x(1,[index1 frontiers{k}.inds(2)]), ...
+                        x(2,[index1 frontiers{k}.inds(2)]), ...
+                        x(3,[index1 frontiers{k}.inds(2)]), 'bo-');
+                end
+                frontiers{k}.inds(1) = [];
+                frontiers{k}.numPts = length(frontiers{k}.inds);
+                frontiers{k}.edgeAngles(1) = [];
+                frontiers{k}.edgeAngles(1) = updateEdgeAngles(frontiers{k}, x, gradX, 1);
+            elseif (nearIndex ~= 0)
+                % Candidate point close enough to other point on the
+                % surface: Split surface
+                numNewFrontiers = numNewFrontiers + 1;
+                faces = [faces; [index1, frontiers{k}.inds(nearIndex), index2]];
+                if plot
+                    plot3(x(1,[index1 frontiers{k}.inds(nearIndex) index2]), ...
+                        x(2,[index1 frontiers{k}.inds(nearIndex) index2]), ...
+                        x(3,[index1 frontiers{k}.inds(nearIndex) index2]), 'bo-');
+                end
+                newFrontiers{numNewFrontiers}.inds = frontiers{k}.inds(nearIndex:end);
+                newFrontiers{numNewFrontiers}.numPts = length(newFrontiers{numNewFrontiers}.inds);
+                newFrontiers{numNewFrontiers}.edgeAngles = frontiers{k}.edgeAngles(nearIndex:end);
+                updateInds = [1, newFrontiers{numNewFrontiers}.numPts];
+                newFrontiers{numNewFrontiers}.edgeAngles(updateInds) = ...
+                    updateEdgeAngles(newFrontiers{numNewFrontiers}, ...
+                    x, gradX, updateInds);
+                frontiers{k}.inds = frontiers{k}.inds(1:nearIndex);
+                frontiers{k}.numPts = length(frontiers{k}.inds);
+                frontiers{k}.edgeAngles = frontiers{k}.edgeAngles(1:nearIndex);
+                updateInds = [1, frontiers{k}.numPts];
+                frontiers{k}.edgeAngles(updateInds) = ...
+                    updateEdgeAngles(frontiers{k}, ...
+                    x, gradX, updateInds);
             end
             if plot
                 delete(candidatePoint);
