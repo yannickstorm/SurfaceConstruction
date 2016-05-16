@@ -18,34 +18,35 @@ function covMatStar = CovMatStar(sigma,gamma,X1,X2)
 
 [D,N1] = size(X1);
 N2 = size(X2,2);
-cov = @(x1,x2)...
-    (sigma^2 * exp(-1/2 * gamma *(x1 - x2)'*(x1 - x2)));
-
 covMatStar = zeros(N1 * (D + 1),N2 * (D + 1));
 
 for n1 = 1 : N1
     for n2 = 1 : N2
-        covx1x2 = cov(X1(:,n1),X2(:,n2));
+        covx1x2 = sigma^2 * exp(-1/2 * gamma *...
+            (X1(:,n1) - X2(:,n2))'*(X1(:,n1) - X2(:,n2)));
         for d1 = 0 : D
             for d2 = 0 : D
-                covMatStar((n1 - 1) * (D + 1) + d1 + 1,...
+                if (d1 == 0) && (d2 == 0)
+                    covMatStar((n1 - 1) * (D + 1) + d1 + 1,...
                     (n2 - 1) * (D + 1) + d2 + 1) = ...
-                    covxixj(gamma,X1(:,n1),X2(:,n2),covx1x2,d1,d2);
-                
+                    covx1x2;
+                elseif (d1 > 0) && (d2 == 0)
+                    covMatStar((n1 - 1) * (D + 1) + d1 + 1,...
+                        (n2 - 1) * (D + 1) + d2 + 1) = ...
+                        - gamma * (X1(d1,n1)-X2(d1,n2)) * covx1x2;
+                elseif (d1 == 0) && (d2 > 0)
+                    covMatStar((n1 - 1) * (D + 1) + d1 + 1,...
+                        (n2 - 1) * (D + 1) + d2 + 1) = ...
+                        gamma * (X1(d2,n1)-X2(d2,n2)) * covx1x2;
+                else
+                    covMatStar((n1 - 1) * (D + 1) + d1 + 1,...
+                        (n2 - 1) * (D + 1) + d2 + 1) = ...
+                        (gamma * (d1==d2) - ...
+                        gamma^2 * (X1(d1,n1)-X2(d1,n2)) * (X1(d2,n1)-X2(d2,n2))) * ...
+                        covx1x2;
+                end
             end
         end
     end
 end
 
-function covxixj = covxixj(gamma,x1,x2,covx1x2,i,j)
-if (i == 0) && (j == 0)
-    covxixj = covx1x2;
-elseif (i > 0) && (j == 0)
-    covxixj = - gamma * (x1(i)-x2(i)) * covx1x2;
-elseif (i == 0) && (j > 0)
-    covxixj = gamma * (x1(j)-x2(j)) * covx1x2;
-else
-    covxixj = (gamma * (i==j) - ...
-    gamma^2 * (x1(i)-x2(i)) * (x1(j)-x2(j))) * ...
-    covx1x2;
-end
