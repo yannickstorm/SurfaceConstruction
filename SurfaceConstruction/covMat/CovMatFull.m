@@ -1,4 +1,4 @@
-function covMatFull = CovMatFull(sigma,gamma,X1)
+function covMatFull = CovMatFull(sigma,gamma,X)
 %% Description
 % Computes the covariance matrix between function values and 1st order
 % derivatives between input locations X1 and X2
@@ -16,40 +16,41 @@ function covMatFull = CovMatFull(sigma,gamma,X1)
 % KderX1X2 - Covariance Matrix
 
 
-[D,N1] = size(X1);
-cov = @(x1,x2)...
-    (sigma^2 * exp(-1/2 * gamma *(x1 - x2)'*(x1 - x2)));
+[D,N1] = size(X);
 
 covMatFull = zeros(N1 * (D + 1),N1 * (D + 1));
 
 for n1 = 1 : N1
     for n2 = 1 : N1
-        covx1x2 = cov(X1(:,n1),X1(:,n2));
+        covx1x2 = sigma^2 * exp(-1/2 * gamma *...
+            (X(:,n1) - X(:,n2))'*(X(:,n1) - X(:,n2)));
         for d1 = 0 : D
             for d2 = 0 : D
                 if ((n1 - 1) * (D + 1) + d1 + 1 <= ...
-                    (n2 - 1) * (D + 1) + d2 + 1)
-                    covMatFull((n1 - 1) * (D + 1) + d1 + 1,...
-                        (n2 - 1) * (D + 1) + d2 + 1) = ...
-                        covxixj(gamma,X1(:,n1),X1(:,n2),covx1x2,d1,d2);
+                        (n2 - 1) * (D + 1) + d2 + 1)
+                    if (d1 == 0) && (d2 == 0)
+                        covMatFull((n1 - 1) * (D + 1) + d1 + 1,...
+                            (n2 - 1) * (D + 1) + d2 + 1) = ...
+                            covx1x2;
+                    elseif (d1 > 0) && (d2 == 0)
+                        covMatFull((n1 - 1) * (D + 1) + d1 + 1,...
+                            (n2 - 1) * (D + 1) + d2 + 1) = ...
+                            - gamma * (X(d1,n1)-X(d1,n2)) * covx1x2;
+                    elseif (d1 == 0) && (d2 > 0)
+                        covMatFull((n1 - 1) * (D + 1) + d1 + 1,...
+                            (n2 - 1) * (D + 1) + d2 + 1) = ...
+                            gamma * (X(d2,n1)-X(d2,n2)) * covx1x2;
+                    else
+                        covMatFull((n1 - 1) * (D + 1) + d1 + 1,...
+                            (n2 - 1) * (D + 1) + d2 + 1) = ...
+                            (gamma * (d1==d2) - ...
+                            gamma^2 * (X(d1,n1)-X(d1,n2)) * (X(d2,n1)-X(d2,n2))) * ...
+                            covx1x2;
+                    end
                 end
             end
         end
     end
 end
-if isequal(X1,X1)
-    covMatFull = covMatFull + covMatFull' - diag(diag(covMatFull));
-end
+covMatFull = covMatFull + covMatFull' - diag(diag(covMatFull));
 
-function covxixj = covxixj(gamma,x1,x2,covx1x2,i,j)
-if (i == 0) && (j == 0)
-    covxixj = covx1x2;
-elseif (i > 0) && (j == 0)
-    covxixj = - gamma * (x1(i)-x2(i)) * covx1x2;
-elseif (i == 0) && (j > 0)
-    covxixj = gamma * (x1(j)-x2(j)) * covx1x2;
-else
-    covxixj = (gamma * (i==j) - ...
-    gamma^2 * (x1(i)-x2(i)) * (x1(j)-x2(j))) * ...
-    covx1x2;
-end
