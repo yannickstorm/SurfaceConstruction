@@ -29,7 +29,7 @@ surfNormals = SurfNormals;
 
 [meanValue, meanGrad] = computePriorFunctions(Prior)
 
-dist = .4;
+dist = .2;
 initPoints = locations;%r * [-4;0;-2];
 
 
@@ -45,6 +45,19 @@ plot3(locations(1,:),locations(2,:),locations(3,:),'r.','markersize',30);
 quiver3(locations(1,:),locations(2,:),locations(3,:),...
     surfNormals(1,:),surfNormals(2,:),surfNormals(3,:),'linewidth',2,'color','r');
 
+cropCar = true;
+if cropCar
+    thresh = -2;
+    remFaces = [];
+    vertices(vertices(:,3)<thresh,3) = thresh;
+    for i = 1:size(faces,1)
+        if all(vertices(faces(i,:),3) == thresh)
+            remFaces = [remFaces i];
+        end
+    end
+    faces(remFaces,:) = [];
+end
+        
 
 patch('faces',faces,'vertices',vertices,...
     'facecolor',[0.5 0.5 0.5], ...
