@@ -17,7 +17,7 @@ fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 if plot
     gradients = false;
     
-    figure
+%     figure
 	axis equal
     hold on
     
@@ -65,7 +65,9 @@ numNewFrontiers = 0;
 jMax = 10000;
 j = 1;
 while numFrontiers > 0 && j < jMax
-    
+    if mod(j,100) == 0
+        j
+    end
     for k = 1:numFrontiers
         if frontiers{k}.numPts < 3
             continue
