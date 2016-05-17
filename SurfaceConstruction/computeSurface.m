@@ -93,8 +93,9 @@ while numFrontiers > 0 && j < jMax
             frontiers{k}.inds(end) = [];
             frontiers{k}.numPts = length(frontiers{k}.inds);
             frontiers{k}.edgeAngles(end) = [];
-            frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
-                frontiers{k}.numPts);
+            updateInds = [1, frontiers{k}.numPts];
+            frontiers{k}.edgeAngles(updateInds) = updateEdgeAngles(frontiers{k}, x, gradX,...
+                updateInds);
         elseif frontiers{k}.edgeAngles(1) < pi/2
             % Angle at beginning edge node small enough to close gap immediately
             faces = [faces; [index1, frontiers{k}.inds(2), index2]];
@@ -106,7 +107,9 @@ while numFrontiers > 0 && j < jMax
             frontiers{k}.inds(1) = [];
             frontiers{k}.numPts = length(frontiers{k}.inds);
             frontiers{k}.edgeAngles(1) = [];
-            frontiers{k}.edgeAngles(1) = updateEdgeAngles(frontiers{k}, x, gradX, 1);
+            updateInds = [1, frontiers{k}.numPts];
+            frontiers{k}.edgeAngles(updateInds) = updateEdgeAngles(frontiers{k}, x, gradX,...
+                updateInds);
         else
             % Generate new candidate point
             xCand = thirdPoint(...
@@ -193,8 +196,9 @@ while numFrontiers > 0 && j < jMax
                 frontiers{k}.inds(end) = [];
                 frontiers{k}.numPts = length(frontiers{k}.inds);
                 frontiers{k}.edgeAngles(end) = [];
-                frontiers{k}.edgeAngles(end) = updateEdgeAngles(frontiers{k}, x, gradX,...
-                    frontiers{k}.numPts);
+                updateInds = [1, frontiers{k}.numPts];
+                frontiers{k}.edgeAngles(updateInds) = updateEdgeAngles(frontiers{k}, x, gradX,...
+                    updateInds);
             elseif nearIndex == 2
                 % Candidate point close enough to next edge point
                 faces = [faces; [index1, frontiers{k}.inds(2), index2]];
@@ -206,7 +210,9 @@ while numFrontiers > 0 && j < jMax
                 frontiers{k}.inds(1) = [];
                 frontiers{k}.numPts = length(frontiers{k}.inds);
                 frontiers{k}.edgeAngles(1) = [];
-                frontiers{k}.edgeAngles(1) = updateEdgeAngles(frontiers{k}, x, gradX, 1);
+                updateInds = [1, frontiers{k}.numPts];
+                frontiers{k}.edgeAngles(updateInds) = updateEdgeAngles(frontiers{k}, x, gradX,...
+                    updateInds);
             elseif (nearIndex ~= 0)
                 % Candidate point close enough to other point on the
                 % surface: Split surface
@@ -224,6 +230,7 @@ while numFrontiers > 0 && j < jMax
                 newFrontiers{numNewFrontiers}.edgeAngles(updateInds) = ...
                     updateEdgeAngles(newFrontiers{numNewFrontiers}, ...
                     x, gradX, updateInds);
+                
                 frontiers{k}.inds = frontiers{k}.inds(1:nearIndex);
                 frontiers{k}.numPts = length(frontiers{k}.inds);
                 frontiers{k}.edgeAngles = frontiers{k}.edgeAngles(1:nearIndex);
