@@ -59,8 +59,6 @@ frontierPlots = [];
 
 numXPts = 3 * k;
 removeFrontiers = [];
-newFrontiers = {};
-numNewFrontiers = 0;
 
 jMax = 10000;
 j = 1;
@@ -214,21 +212,21 @@ while numFrontiers > 0 && j < jMax
             elseif (nearIndex ~= 0)
                 % Candidate point close enough to other point on the
                 % surface: Split surface
-                numNewFrontiers = numNewFrontiers + 1;
                 faces = [faces; [index1, frontiers{k}.inds(nearIndex), index2]];
                 if plot
                     plot3(x(1,[index1 frontiers{k}.inds(nearIndex) index2]), ...
                         x(2,[index1 frontiers{k}.inds(nearIndex) index2]), ...
                         x(3,[index1 frontiers{k}.inds(nearIndex) index2]), 'bo-');
                 end
-                newFrontiers{numNewFrontiers}.inds = frontiers{k}.inds(nearIndex:end);
-                newFrontiers{numNewFrontiers}.numPts = length(newFrontiers{numNewFrontiers}.inds);
-                newFrontiers{numNewFrontiers}.edgeAngles = frontiers{k}.edgeAngles(nearIndex:end);
-                updateInds = [1, newFrontiers{numNewFrontiers}.numPts];
-                newFrontiers{numNewFrontiers}.edgeAngles(updateInds) = ...
-                    updateEdgeAngles(newFrontiers{numNewFrontiers}, ...
+                newFrontier.inds = frontiers{k}.inds(nearIndex:end);
+                newFrontier.numPts = length(newFrontier.inds);
+                newFrontier.edgeAngles = frontiers{k}.edgeAngles(nearIndex:end);
+                updateInds = [1, newFrontier.numPts];
+                newFrontier.edgeAngles(updateInds) = ...
+                    updateEdgeAngles(newFrontier, ...
                     x, gradX, updateInds);
-                
+                frontiers = [frontiers newFrontier];
+                numFrontiers = numFrontiers + 1;
                 frontiers{k}.inds = frontiers{k}.inds(1:nearIndex);
                 frontiers{k}.numPts = length(frontiers{k}.inds);
                 frontiers{k}.edgeAngles = frontiers{k}.edgeAngles(1:nearIndex);
@@ -242,6 +240,7 @@ while numFrontiers > 0 && j < jMax
                 delete(candidatePoint2);
             end
             
+            
         end
         if plot
             frontierPlots = [frontierPlots plotFrontier(gca, frontiers{k}, x)];
@@ -249,10 +248,6 @@ while numFrontiers > 0 && j < jMax
         end
         
     end
-    frontiers = [frontiers newFrontiers];
-    numFrontiers = numFrontiers + numNewFrontiers;
-    newFrontiers = {};
-    numNewFrontiers = 0;
     
     for k = 1:numFrontiers
         if frontiers{k}.numPts < 3

@@ -35,7 +35,7 @@ initPoints = locations;%r * [-4;0;-2];
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     Prior, ...
-    meanValue, meanGrad, initPoints, dist, false);
+    meanValue, meanGrad, initPoints, dist, true);
 
 figure
 hold on
