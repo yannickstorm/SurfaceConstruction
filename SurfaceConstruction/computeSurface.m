@@ -6,9 +6,11 @@ gamma = Prior.Gamma;
 noiseVals = Prior.noiseVals;
 noiseGrad = Prior.noiseGrad;
 fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad);
+fPlusDataMat = reshape(fPlusData,[4,size(locations,2)]);
+fData = (fPlusDataMat(1,:))';
 
 covMatData = ComputeCovMatFull(sigma,gamma,locations,noiseVals,noiseGrad);
-RVector = covMatData\fPlusData;
+RVector = covMatData\fData;
 
 fPlusGP = @(x)(CovMatStar(sigma, gamma, x, locations) * RVector);
 

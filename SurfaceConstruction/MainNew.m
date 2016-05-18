@@ -1,7 +1,7 @@
 close all
 addpath('covMat')
 
-noiseVals = 0.00000;
+noiseVals = 0.0000;
 noiseGrad = 0.037;
 sigma = 0.1243;%0.2844; %0.1
 L0 = .2823; 
@@ -35,7 +35,7 @@ initPoints = locations;%r * [-4;0;-2];
 
 [faces, vertices] = computeSurface(locations, surfNormals, ...
     Prior, ...
-    meanValue, meanGrad, initPoints, dist, true);
+    meanValue, meanGrad, initPoints, dist, false);
 
 figure
 hold on
