@@ -19,15 +19,24 @@ switch Prior.type
             meanGrad = @(x)(A *(x - Prior.pos))*Prior.param(1);
         elseif size(Prior.pos,2)==3
             A = diag([1/Prior.param(1)^2, 1/Prior.param(1)^2, 1/Prior.param(1)^2]);
+            
             meanValue = @(x)(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos') - 1));
-            meanGrad = @(x)(Prior.param(1) * A * R(Prior.rot) * (x-Prior.pos'));
+            
+            meanGrad = @(x)(Prior.param(1) *  R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos'));
+
         end
         
     case 'E'
          
         A = diag([1/Prior.param(1)^2, 1/Prior.param(2)^2, 1/Prior.param(3)^2]);
         meanValue = @(x)(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos') - 1));
-        meanGrad = @(x)(Prior.param(1) * A * R(Prior.rot) * (x-Prior.pos'));
+        meanGrad = @(x)(Prior.param(1) *  R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos'));
+        
+    case 'C'
+         
+        A = diag([1/Prior.param(1)^2, 0, 1/Prior.param(3)^2]);
+        meanValue = @(x)(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos') - 1));
+        meanGrad = @(x)(Prior.param(1) *  R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos'));
     case 'N'
         %% No prior
         meanValue = @(x) Prior.param(1);%(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos') - 1));
