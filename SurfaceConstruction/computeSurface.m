@@ -80,7 +80,7 @@ while numFrontiers > 0 && j < jMax
                 x(3,[index1 index2]), 'm-','linewidth',4);
         end
         
-        if frontiers{k}.edgeAngles(end) < pi/2
+        if frontiers{k}.edgeAngles(end) < pi/3
             % Angle at ending edge node small enough to close gap immediately
             faces = [faces; [index1, frontiers{k}.inds(end - 1), index2]];
             if plot
@@ -94,7 +94,7 @@ while numFrontiers > 0 && j < jMax
             updateInds = [1, frontiers{k}.numPts];
             frontiers{k}.edgeAngles(updateInds) = updateEdgeAngles(frontiers{k}, x, gradX,...
                 updateInds);
-        elseif frontiers{k}.edgeAngles(1) < pi/2
+        elseif frontiers{k}.edgeAngles(1) < pi/3
             % Angle at beginning edge node small enough to close gap immediately
             faces = [faces; [index1, frontiers{k}.inds(2), index2]];
             if plot
@@ -117,14 +117,14 @@ while numFrontiers > 0 && j < jMax
             if plot
                 candidatePoint = plot3(xCand(1) , xCand(2), xCand(3), 'go');
             end
-            nearIndex = check(xCand, x, frontiers{k}.inds, 0.8*dist);
+            nearIndex = check(xCand, x, frontiers{k}.inds, dist);
             if (nearIndex == 0)
                 %%%%%%%%%%%%%%%
                 % Check for intersection with other frontiers
                 intersectWithOther = false;
                 for kOther = 1:numFrontiers
                     if kOther ~= k
-                        nearIndex = check(xCand, x, frontiers{kOther}.inds, 0.8*dist);
+                        nearIndex = check(xCand, x, frontiers{kOther}.inds, dist);
                         if (nearIndex ~= 0)
                             intersectWithOther = true;
                             break
@@ -147,7 +147,7 @@ while numFrontiers > 0 && j < jMax
                             x(3,newIndex) , 'ro');
                     end
                     faces = [faces; [index1, newIndex, index2]];
-                    
+            
                     frontiers{k}.inds = [frontiers{k}.inds newIndex];
                     frontiers{k}.numPts = frontiers{k}.numPts + 1;
                     frontiers{k}.edgeAngles = [frontiers{k}.edgeAngles pi];
@@ -256,7 +256,7 @@ while numFrontiers > 0 && j < jMax
             removeFrontiers = [removeFrontiers k];
         elseif frontiers{k}.numPts == 3
             removeFrontiers = [removeFrontiers k];
-            faces = [faces; frontiers{k}.inds];
+            faces = [faces; fliplr(frontiers{k}.inds)];
         end
         
     end
