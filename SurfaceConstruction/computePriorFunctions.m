@@ -15,8 +15,8 @@ switch Prior.type
         %% Sphere:
         if size(Prior.pos,2)==2
             A = diag([1/Prior.param(1)^2,1/Prior.param(1)^2]) ;
-            meanValue = @(x)((x - Prior.pos)'* A * (x - Prior.pos) - 1)*Prior.param(1)/2;
-            meanGrad = @(x)(A *(x - Prior.pos))*Prior.param(1);
+            meanValue = @(x)((x - Prior.pos')'* A * (x - Prior.pos') - 1)*Prior.param(1)/2;
+            meanGrad = @(x)(Prior.param(1) *  A *  (x-Prior.pos'));
         elseif size(Prior.pos,2)==3
             A = diag([1/Prior.param(1)^2, 1/Prior.param(1)^2, 1/Prior.param(1)^2]);
             
