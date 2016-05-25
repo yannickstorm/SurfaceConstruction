@@ -11,20 +11,21 @@ R = @(r) ([     (r(1)^2 - r(2)^2 - r(3)^2) * si2(r)  + norm(r)^2 * cs2(r)    , 2
 
          
 switch Prior.type
+    case 'Ci'
+            Pos = Prior.pos(1:2);
+            A = diag([1/Prior.param(1)^2,1/Prior.param(1)^2]) ;
+            meanValue = @(x)((x - Pos')'* A * (x - Pos') - 1)*Prior.param(1)/2;
+            meanGrad = @(x)(A *(x - Pos'))*Prior.param(1);
+            
     case 'S'
         %% Sphere:
-        if size(Prior.pos,2)==2
-            A = diag([1/Prior.param(1)^2,1/Prior.param(1)^2]) ;
-            meanValue = @(x)((x - Prior.pos')'* A * (x - Prior.pos') - 1)*Prior.param(1)/2;
-            meanGrad = @(x)(Prior.param(1) *  A *  (x-Prior.pos'));
-        elseif size(Prior.pos,2)==3
+            
             A = diag([1/Prior.param(1)^2, 1/Prior.param(1)^2, 1/Prior.param(1)^2]);
             
             meanValue = @(x)(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos') - 1));
             
             meanGrad = @(x)(Prior.param(1) *  R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos'));
 
-        end
         
     case 'E'
          
