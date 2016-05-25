@@ -11,7 +11,7 @@ R = @(r) ([     (r(1)^2 - r(2)^2 - r(3)^2) * si2(r)  + norm(r)^2 * cs2(r)    , 2
 
          
 switch Prior.type
-    case 'C'
+    case 'Ci'
             Pos = Prior.pos(1:2);
             A = diag([1/Prior.param(1)^2,1/Prior.param(1)^2]) ;
             meanValue = @(x)((x - Pos')'* A * (x - Pos') - 1)*Prior.param(1)/2;
