@@ -68,3 +68,4 @@ for n1 = 1 : N1
 end
 covMatFull = covMatFull + covMatFull' - diag(diag(covMatFull));
 
+
