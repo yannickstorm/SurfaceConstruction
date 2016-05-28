@@ -1,16 +1,15 @@
 function [faces, vertices] = computeSurface(locations, surfNormals, ...
     Prior, ...
     meanValue, meanGrad, initPoints, dist, plot)
-sigma = Prior.Sigma;
-gamma = Prior.Gamma;
 noiseVals = Prior.noiseVals;
 noiseGrad = Prior.noiseGrad;
+R = Prior.param(2);
 fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad);
 
-covMatData = ComputeCovMatFull(sigma,gamma,locations,noiseVals,noiseGrad);
+covMatData = ComputeCovMatFullTP(R,locations,noiseVals,noiseGrad);
 RVector = covMatData\fPlusData;
 
-fPlusGP = @(x)(CovMatStar(sigma, gamma, x, locations) * RVector);
+fPlusGP = @(x)(CovMatStarTP(R, x, locations) * RVector);
 
 fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 
@@ -31,7 +30,7 @@ end
 
 initPoints = reduceInitPoints(initPoints, dist);
 
-numInitPoints = size(initPoints, 2)
+numInitPoints = size(initPoints, 2);
 frontiers = cell(1, numInitPoints);
 x = [];
 gradX = [];
@@ -53,14 +52,13 @@ for k = 1:numInitPoints
     end
 end
 
-
 numFrontiers = length(frontiers);
 frontierPlots = [];
 
 numXPts = 3 * k;
 removeFrontiers = [];
 
-jMax = 10000;
+jMax = 1000;
 j = 1;
 while numFrontiers > 0 && j < jMax
     if mod(j,100) == 0

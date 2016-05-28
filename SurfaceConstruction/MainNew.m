@@ -13,7 +13,8 @@ load 'bmw_total'
 % load  'bmw_11'
 locations = PartMeans;
 surfNormals = SurfNormals;
-
+% locations = locations(:,1:3);
+% surfNormals = surfNormals(:,1:3);
 % % For bmw_11
 % cx = -6.1655;
 % cy = -0.0472;
@@ -27,9 +28,10 @@ surfNormals = SurfNormals;
 % 
 % Prior = struct('pos',[cx cy cz],'type',prior_type, 'param', [a b c], 'rot', r);
 
-[meanValue, meanGrad] = computePriorFunctions(Prior)
+Prior = struct('pos',[0 0 0],'type','N', 'param', [0 10 0], 'noiseVals', 0.001, 'noiseGrad', 0.0370);
+[meanValue, meanGrad] = computePriorFunctions(Prior);
 
-dist = 0.3;
+dist = 0.2;
 initPoints = locations;%r * [-4;0;-2];
 
 
@@ -49,7 +51,7 @@ quiver3(locations(1,:),locations(2,:),locations(3,:),...
 quiver3(locations(1,:),locations(2,:),locations(3,:),...
     surfNormals(1,:),surfNormals(2,:),surfNormals(3,:),'linewidth',2,'color','r');
 
-cropCar = true;
+cropCar = false;
 if cropCar
     thresh = -2;
     zlim([thresh;max(vertices(:,3)) + 1]);
