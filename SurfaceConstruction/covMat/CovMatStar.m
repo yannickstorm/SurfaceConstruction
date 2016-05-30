@@ -14,7 +14,7 @@ function covMatStar = CovMatStar(sigma,gamma,X1,X2)
 
 %% Outputs
 % KderX1X2 - Covariance Matrix
-
+gamma = abs(gamma);
 
 [D,N1] = size(X1);
 N2 = size(X2,2);

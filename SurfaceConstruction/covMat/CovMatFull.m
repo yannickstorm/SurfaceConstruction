@@ -15,6 +15,7 @@ function covMatFull = CovMatFull(sigma,gamma,X)
 %% Outputs
 % KderX1X2 - Covariance Matrix
 
+gamma = abs(gamma);
 
 [D,N1] = size(X);
 
