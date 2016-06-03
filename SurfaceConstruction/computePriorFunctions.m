@@ -43,5 +43,20 @@ switch Prior.type
         meanValue = @(x) Prior.param(1);%(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos') - 1));
         meanGrad = @(x) [0;0;0];%(Prior.param(1) * A * R(Prior.rot) * (x-Prior.pos'));
         
+    case 'B'
+         
+        A1 = diag([1/Prior.param(1)^2, 1/Prior.param(1)^2, 0]);
+        A2 = diag([1/Prior.param(1)^2, 1/Prior.param(1)^2, 1/Prior.param(1)^2]);
+        
+        mCyl = @(x)(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A1 * R(Prior.rot) * (x-Prior.pos') - 1));
+        gCyl = @(x)(Prior.param(1) *  R(Prior.rot)' * A1 * R(Prior.rot) * (x-Prior.pos'));
+        
+        mSph = @(x,signe)(Prior.param(1)/2 * (((x-Prior.pos')'* R(Prior.rot)' - signe * [0 0 Prior.param(3)]) * A2 * (R(Prior.rot) * (x-Prior.pos') - signe * [0; 0; Prior.param(3)]) - 1));
+        gSph = @(x,signe)(Prior.param(1) *  R(Prior.rot)' * A2 * (R(Prior.rot) * (x-Prior.pos') - signe * [0; 0; Prior.param(3)]));
+ 
+        cond = @(x,signe1, signe2) (signe1 * [0 0 1] * R(Prior.rot) * (x-Prior.pos')  >  signe2 * Prior.param(3));
+        meanValue = @(x)( cond(x,1,1) * mSph(x,1) +  (cond(x,-1,-1) && cond(x,1,-1)) * mCyl(x) + cond(x,-1,1) * mSph(x,-1) );
+        meanGrad  = @(x)( cond(x,1,1) * gSph(x,1) +  (cond(x,-1,-1) && cond(x,1,-1)) * gCyl(x) + cond(x,-1,1) * gSph(x,-1) );
+
 end
 end
