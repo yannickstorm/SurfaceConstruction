@@ -57,6 +57,12 @@ switch Prior.type
         cond = @(x,signe1, signe2) (signe1 * [0 0 1] * R(Prior.rot) * (x-Prior.pos')  >  signe2 * Prior.param(3));
         meanValue = @(x)( cond(x,1,1) * mSph(x,1) +  (cond(x,-1,-1) && cond(x,1,-1)) * mCyl(x) + cond(x,-1,1) * mSph(x,-1) );
         meanGrad  = @(x)( cond(x,1,1) * gSph(x,1) +  (cond(x,-1,-1) && cond(x,1,-1)) * gCyl(x) + cond(x,-1,1) * gSph(x,-1) );
-
+        
+    case 'cube'
+         
+        A = diag(Prior.param);
+        meanValue = @(x)(x'.^2 * A * x.^2 - 1)/6*Prior.param(1);
+        meanGrad = @(x)(A * x.^3)*Prior.param(1);
+       
 end
 end
