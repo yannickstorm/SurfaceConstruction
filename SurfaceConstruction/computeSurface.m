@@ -1,4 +1,4 @@
-function [faces, vertices] = computeSurface(locations, surfNormals, ...
+function [faces, vertices, frontiers] = computeSurface(locations, surfNormals, ...
     Prior, ...
     meanValue, meanGrad, initPoints, dist, plot)
 sigma = Prior.Sigma;
@@ -60,7 +60,7 @@ frontierPlots = [];
 numXPts = 3 * k;
 removeFrontiers = [];
 
-jMax = 10000;
+jMax = 100;
 j = 1;
 while numFrontiers > 0 && j < jMax
     if mod(j,100) == 0
@@ -269,9 +269,12 @@ while numFrontiers > 0 && j < jMax
     if plot
         drawnow
         delete(frontierPlots);
+        
     end
     
     j = j + 1;
     
 end
+
+
 vertices = x';
