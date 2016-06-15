@@ -1,6 +1,6 @@
 function [faces, vertices, frontiers] = computeSurface(locations, surfNormals, ...
     Prior, ...
-    meanValue, meanGrad, initPoints, dist, plot)
+    meanValue, meanGrad, initPoints, dist, plot, jMax)
 sigma = Prior.Sigma;
 gamma = Prior.Gamma;
 noiseVals = Prior.noiseVals;
@@ -60,7 +60,6 @@ frontierPlots = [];
 numXPts = 3 * k;
 removeFrontiers = [];
 
-jMax = 100;
 j = 1;
 while numFrontiers > 0 && j < jMax
     if mod(j,100) == 0
