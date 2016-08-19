@@ -20,12 +20,11 @@ gamma = abs(gamma);
 [D,N1] = size(X);
 
 covMatFull = zeros(N1 * (D + 1),N1 * (D + 1));
-
+sigma_2 = sigma^2;
 for n1 = 1 : N1
     for n2 = 1 : N1
         dist = X(:,n1) - X(:,n2);
-        covx1x2 = sigma^2 * exp(-1/2 * gamma *...
-            (dist'*dist));
+        covx1x2 = sigma_2 * exp(-1/2 * gamma * (norm(dist)^2));
         for d1 = 0 : D
             for d2 = 0 : D
                 if ((n1 - 1) * (D + 1) + d1 + 1 <= ...

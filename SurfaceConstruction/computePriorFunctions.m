@@ -33,10 +33,12 @@ switch Prior.type
         meanValue = @(x)(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos') - 1));
         meanGrad = @(x)(Prior.param(1) *  R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos'));
         
-    case 'C'
+    case 'Cy'
          
         A = diag([1/Prior.param(1)^2, 0, 1/Prior.param(3)^2]);
+        
         meanValue = @(x)(Prior.param(1)/2 * ((x-Prior.pos')'* R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos') - 1));
+        
         meanGrad = @(x)(Prior.param(1) *  R(Prior.rot)' * A * R(Prior.rot) * (x-Prior.pos'));
     case 'N'
         %% No prior
@@ -63,6 +65,11 @@ switch Prior.type
         A = diag(Prior.param);
         meanValue = @(x)(x'.^2 * A * x.^2 - 1)/6*Prior.param(1);
         meanGrad = @(x)(A * x.^3)*Prior.param(1);
+    
+    case 'Plane'
+
+        meanValue = @(x) ([0 0 1]) * (R(Prior.rot) * x - Prior.pos(1)*([0 0 1])');
+        meanGrad = @(x) ([0 0 1] * R(Prior.rot))';
        
 end
 end
