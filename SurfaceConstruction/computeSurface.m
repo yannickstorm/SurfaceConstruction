@@ -3,14 +3,12 @@ function [faces, vertices] = computeSurface(locations, surfNormals, ...
     meanValue, meanGrad, initPoints, dist, jMax, plot)
 sigma = Prior.Sigma;
 gamma = Prior.Gamma;
-noiseVals = Prior.noiseVals;
-noiseGrad = Prior.noiseGrad;
 fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad, 1);
 
-covMatData = ComputeCovMatFull(sigma,gamma,locations,noiseVals,noiseGrad);
+covMatData = ComputeCovMatFull(locations, Prior);
 RVector = covMatData\fPlusData;
 
-fPlusGP = @(x)(CovMatStar(sigma, gamma, x, locations) * RVector);
+fPlusGP = @(x)(CovMatStar(Prior, x, locations) * RVector);
 
 fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 
