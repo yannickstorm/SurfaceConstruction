@@ -10,7 +10,9 @@ gamma = 2.5977;%0.6525;%1/L0^2;
 % % load '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_total'
 % load  '/Users/Yannick/Coding/SurfaceConstruction/SurfaceConstruction/bmw_11'
 load 'bmw_total'
+% load 'bmw_11'
 % load  'bmw_11'
+Prior.kernel = 'SE';
 locations = PartMeans;
 surfNormals = SurfNormals;
 
@@ -32,10 +34,11 @@ surfNormals = SurfNormals;
 dist = 0.3;
 initPoints = locations;%r * [-4;0;-2];
 
+JMax = 1000;
 
-[faces, vertices] = computeSurface(locations, surfNormals, ...
+[faces, vertices] = computeSurface(PartMeans, SurfNormals, ...
     Prior, ...
-    meanValue, meanGrad, initPoints, dist, false);
+    meanValue, meanGrad, initPoints, dist, JMax, false);
 
 
 
@@ -49,7 +52,7 @@ quiver3(locations(1,:),locations(2,:),locations(3,:),...
 quiver3(locations(1,:),locations(2,:),locations(3,:),...
     surfNormals(1,:),surfNormals(2,:),surfNormals(3,:),'linewidth',2,'color','r');
 
-cropCar = true;
+cropCar = false;
 if cropCar
     thresh = -2;
     zlim([thresh;max(vertices(:,3)) + 1]);
