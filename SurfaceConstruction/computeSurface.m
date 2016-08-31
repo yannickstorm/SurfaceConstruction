@@ -1,14 +1,14 @@
-function [faces, vertices] = computeSurface(locations, surfNormals, ...
+function [faces, vertices, variances] = computeSurface(locations, surfNormals, ...
     Prior, ...
     meanValue, meanGrad, initPoints, dist, jMax, plot)
-sigma = Prior.Sigma;
-gamma = Prior.Gamma;
 fPlusData = ComputeFplus(locations, surfNormals, meanValue, meanGrad, 1);
 
 covMatData = ComputeCovMatFull(locations, Prior);
 RVector = covMatData\fPlusData;
 
 fPlusGP = @(x)(CovMatStar(Prior, x, locations) * RVector);
+varGP = @(x)(CovMatStar(Prior, x, x) - ...
+    CovMatStar(Prior, x, locations) * (covMatData\CovMatStar(Prior, x, locations)'));
 
 fPlus = @(x)([meanValue(x);meanGrad(x)] + fPlusGP(x));
 
@@ -40,7 +40,9 @@ for k = 1:numInitPoints
     frontiers{k} = frontierNew;
     x = [x xNew];
     gradX = [gradX gradXNew];
-    faces = [faces; inds];    
+    faces = [faces; inds];
+    
+    CovMatStar(Prior, x(:,inds(1)), locations)
     if plot
         %     figure
         plot3(x(1,[inds inds(1)]) , x(2,[inds inds(1)]), x(3,[inds inds(1)]), 'bo-')
@@ -272,4 +274,12 @@ while numFrontiers > 0 && j < jMax
     j = j + 1;
     
 end
+
+% Compute the GP vaiance at each point
 vertices = x';
+nX = size(vertices,1);
+variances = zeros(nX,1);
+for ix = 1:nX
+    var = varGP(x(:,ix));
+    variances(ix) = var(1);
+end

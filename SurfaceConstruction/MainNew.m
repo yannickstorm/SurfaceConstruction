@@ -29,14 +29,14 @@ surfNormals = SurfNormals;
 % 
 % Prior = struct('pos',[cx cy cz],'type',prior_type, 'param', [a b c], 'rot', r);
 
-[meanValue, meanGrad] = computePriorFunctions(Prior)
+[meanValue, meanGrad] = computePriorFunctions(Prior);
 
 dist = 0.3;
 initPoints = locations;%r * [-4;0;-2];
 
 JMax = 1000;
 
-[faces, vertices] = computeSurface(PartMeans, SurfNormals, ...
+[faces, vertices, variances] = computeSurface(PartMeans, SurfNormals, ...
     Prior, ...
     meanValue, meanGrad, initPoints, dist, JMax, false);
 
@@ -59,9 +59,10 @@ if cropCar
 end
 
 patch('faces',faces,'vertices',vertices,...
-    'facecolor',[0.5 0.5 0.5], ...
+    'facevertexcdata',sqrt(variances), ...
+    'facecolor','interp', ...
     'edgecolor', 'none', ...
     'facelighting','gouraud');
-camlight('headlight')
+camlight('right')
 set(gca,'view',[46.8000   18.8000]);
 % light('Position',[-1 -1 0])
